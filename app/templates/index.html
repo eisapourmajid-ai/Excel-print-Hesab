@@ -1,0 +1,1961 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سامانه یکپارچه ورود و ادغام اکسل | مازندشت</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap');
+        
+        * {
+            font-family: 'Vazirmatn', Tahoma, -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar {
+            width: 7px;
+            height: 7px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .editable-cell {
+            transition: all 0.15s ease;
+        }
+        .editable-cell:hover {
+            background-color: #fef08a !important;
+            cursor: pointer;
+        }
+        .editable-cell:focus {
+            outline: 2px solid #2563eb;
+            background-color: #ffffff !important;
+        }
+
+        .locked-cell {
+            background-color: #f8fafc;
+            color: #475569;
+            user-select: none;
+            cursor: not-allowed;
+        }
+
+        /* Print Media Styles: Clean, Official, No Codes on Print */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #print-area, #print-area * {
+                visibility: visible;
+            }
+            #print-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                margin: 0;
+                padding: 10mm;
+                background: white;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .hide-on-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 via-slate-100 to-emerald-50/20 text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-white/95 backdrop-blur-md border-b border-slate-200/90 sticky top-0 z-40 shadow-sm no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Brand & Logo -->
+                <div class="flex items-center gap-3">
+                    <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-emerald-600 via-teal-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
+                        <i data-lucide="layers" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-black text-lg text-slate-900 tracking-tight">مازندشت · سامانه ورود، تطبیق و ادغام اکسل</span>
+                            <span class="bg-emerald-100/90 text-emerald-800 text-[11px] font-extrabold px-2.5 py-0.5 rounded-full border border-emerald-300">نسخه صفحه به صفحه</span>
+                        </div>
+                        <p class="text-xs text-slate-500">مدیریت شرکت: <strong class="text-slate-800">قاسم زاهدی</strong> | سورتینگ، بسته‌بندی، باسکول و بازرگانی مرکبات</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <div class="flex items-center gap-2 bg-slate-100/80 p-1.5 rounded-2xl border border-slate-200">
+                    <button onclick="switchMainTab('wizard')" id="nav-btn-wizard" class="px-3.5 py-1.5 text-xs font-bold rounded-xl bg-white text-emerald-700 shadow-sm flex items-center gap-1.5 transition">
+                        <i data-lucide="file-input" class="w-4 h-4"></i>
+                        ورود و تطبیق (صفحه به صفحه)
+                    </button>
+                    <button onclick="switchMainTab('banks')" id="nav-btn-banks" class="px-3.5 py-1.5 text-xs font-bold rounded-xl text-slate-600 hover:text-slate-900 hover:bg-white/60 flex items-center gap-1.5 transition">
+                        <i data-lucide="landmark" class="w-4 h-4 text-indigo-600"></i>
+                        تنظیمات بانک‌ها (INFO.xlsx)
+                    </button>
+                    <button onclick="switchMainTab('files')" id="nav-btn-files" class="px-3.5 py-1.5 text-xs font-semibold rounded-xl text-slate-600 hover:text-slate-900 hover:bg-white/60 flex items-center gap-1.5 transition">
+                        <i data-lucide="database" class="w-4 h-4"></i>
+                        فایل‌های ۹گانه
+                    </button>
+                    <button onclick="switchMainTab('backups')" id="nav-btn-backups" class="px-3.5 py-1.5 text-xs font-semibold rounded-xl text-slate-600 hover:text-slate-900 hover:bg-white/60 flex items-center gap-1.5 transition">
+                        <i data-lucide="shield-check" class="w-4 h-4"></i>
+                        پشتیبان‌ها
+                        <span id="badge-backup-count" class="bg-slate-200 text-slate-700 text-[10px] px-1.5 py-0.2 rounded-full font-bold">0</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- TAB 1: فرایند صفحه به صفحه (Page-by-Page Wizard) -->
+        <div id="main-tab-wizard" class="space-y-6">
+
+            <!-- WIZARD STEPPER BAR (Always at Top) -->
+            <div class="bg-white rounded-3xl p-4 border border-slate-200/90 shadow-sm no-print">
+                <div class="flex items-center justify-between max-w-4xl mx-auto">
+                    <!-- Step 1 Button -->
+                    <button onclick="goToPage(1)" id="step-btn-1" class="flex items-center gap-2 group transition">
+                        <div id="step-circle-1" class="w-9 h-9 rounded-2xl bg-emerald-600 text-white font-black flex items-center justify-center text-sm shadow-md shadow-emerald-500/20">۱</div>
+                        <div class="text-right">
+                            <span class="text-xs font-black text-slate-900 block">صفحه ۱: انتخاب و افزودن فایل</span>
+                            <span class="text-[10px] text-slate-400 block">تعیین مدل و بارگذاری اکسل</span>
+                        </div>
+                    </button>
+
+                    <div id="stepper-line-1" class="flex-1 h-0.5 bg-slate-200 mx-4"></div>
+
+                    <!-- Step 2 Button -->
+                    <button onclick="goToPage(2)" id="step-btn-2" class="flex items-center gap-2 opacity-50 group transition">
+                        <div id="step-circle-2" class="w-9 h-9 rounded-2xl bg-slate-200 text-slate-600 font-black flex items-center justify-center text-sm">۲</div>
+                        <div class="text-right">
+                            <span class="text-xs font-black text-slate-700 block">صفحه ۲: تطبیق ستون‌ها</span>
+                            <span class="text-[10px] text-slate-400 block">نگاشت ستون‌ها و انتخاب بانک</span>
+                        </div>
+                    </button>
+
+                    <div id="stepper-line-2" class="flex-1 h-0.5 bg-slate-200 mx-4"></div>
+
+                    <!-- Step 3 Button -->
+                    <button onclick="goToPage(3)" id="step-btn-3" class="flex items-center gap-2 opacity-50 group transition">
+                        <div id="step-circle-3" class="w-9 h-9 rounded-2xl bg-slate-200 text-slate-600 font-black flex items-center justify-center text-sm">۳</div>
+                        <div class="text-right">
+                            <span class="text-xs font-black text-slate-700 block">صفحه ۳: پیش‌نمایش و اصلاح دستی</span>
+                            <span class="text-[10px] text-slate-400 block">ویرایش جزئیات و طبقه‌بندی</span>
+                        </div>
+                    </button>
+
+                    <div id="stepper-line-3" class="flex-1 h-0.5 bg-slate-200 mx-4"></div>
+
+                    <!-- Step 4 Button -->
+                    <button onclick="goToPage(4)" id="step-btn-4" class="flex items-center gap-2 opacity-50 group transition">
+                        <div id="step-circle-4" class="w-9 h-9 rounded-2xl bg-slate-200 text-slate-600 font-black flex items-center justify-center text-sm">۴</div>
+                        <div class="text-right">
+                            <span class="text-xs font-black text-slate-700 block">صفحه ۴: ادغام و پرینت رسمی</span>
+                            <span class="text-[10px] text-slate-400 block">ذخیره در اکسل و گزارش چاپی</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ============================================================== -->
+            <!-- صفحه ۱: انتخاب مدل و بارگذاری فایل اکسل (Page 1) -->
+            <!-- ============================================================== -->
+            <div id="wizard-page-1" class="space-y-6">
+                <div class="bg-white rounded-3xl border border-slate-200/90 shadow-sm p-6 space-y-6">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-7 h-7 rounded-xl bg-emerald-600 text-white font-black text-xs flex items-center justify-center">۱</span>
+                            <h2 class="text-base font-black text-slate-900">نوع فایلی که می‌خواهید وارد نمایید را انتخاب فرمایید</h2>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-1">با انتخاب مدل، تمامی ستون‌ها، قواعد مالی و فرمول‌ها متناسب با همان فایل تنظیم خواهند شد.</p>
+                    </div>
+
+                    <!-- 3 Model Selection Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- Model 1: Bank Transactions -->
+                        <div onclick="selectFileType('transactions')" id="type-card-transactions" class="p-5 rounded-2xl border-2 border-indigo-600 bg-indigo-50/40 ring-2 ring-indigo-500/20 cursor-pointer transition flex items-start gap-3.5 shadow-sm">
+                            <div class="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-indigo-500/20">
+                                <i data-lucide="credit-card" class="w-6 h-6"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-black text-sm text-slate-900">۱. صورت‌حساب تراکنش‌های بانک</span>
+                                    <span class="text-[10px] bg-indigo-100 text-indigo-900 font-extrabold px-2 py-0.5 rounded font-mono">Transactions.xlsx</span>
+                                </div>
+                                <p class="text-xs text-slate-600 mt-1.5 leading-relaxed">
+                                    واریز بارفروشان، پوز، کارمزد، وام‌ها، و به ویژه <strong>فروش اموال و هزینه‌های شخصی مدیر (قاسم زاهدی)</strong>.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Model 2: Baskol Weighbridge -->
+                        <div onclick="selectFileType('baskol')" id="type-card-baskol" class="p-5 rounded-2xl border-2 border-slate-200 hover:border-emerald-500 bg-white hover:bg-emerald-50/20 cursor-pointer transition flex items-start gap-3.5 shadow-sm">
+                            <div class="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-emerald-500/20">
+                                <i data-lucide="truck" class="w-6 h-6"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-black text-sm text-slate-900">۲. ورود و خروج بار و باسکول</span>
+                                    <span class="text-[10px] bg-emerald-100 text-emerald-900 font-extrabold px-2 py-0.5 rounded font-mono">Baskol.xlsx</span>
+                                </div>
+                                <p class="text-xs text-slate-600 mt-1.5 leading-relaxed">
+                                    قبض‌های باسکول، توزین بار ورودی و خروجی، تعداد سبد، محاسبه خودکار تار و افت میوه.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Model 3: Fruit Sales & Purchases -->
+                        <div onclick="selectFileType('trade')" id="type-card-trade" class="p-5 rounded-2xl border-2 border-slate-200 hover:border-purple-500 bg-white hover:bg-purple-50/20 cursor-pointer transition flex items-start gap-3.5 shadow-sm">
+                            <div class="w-12 h-12 rounded-2xl bg-purple-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-purple-500/20">
+                                <i data-lucide="scale" class="w-6 h-6"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-black text-sm text-slate-900">۳. خرید و فروش مرکبات</span>
+                                    <span class="text-[10px] bg-purple-100 text-purple-900 font-extrabold px-2 py-0.5 rounded font-mono">Purchases/Sales</span>
+                                </div>
+                                <p class="text-xs text-slate-600 mt-1.5 leading-relaxed">
+                                    فاکتورهای تسویه خرید باغدار، فروش به میدان بار و صادرات با فی، اوزان و صورت‌حساب شخص.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick 1-Click Test Samples -->
+                    <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
+                        <span class="text-xs font-black text-slate-700 flex items-center gap-1.5">
+                            <i data-lucide="sparkles" class="w-4 h-4 text-amber-500"></i>
+                            تست فوری نمونه‌های آماده بدون نیاز به ساخت فایل:
+                        </span>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <button onclick="loadSampleFile('sample_bank_single_col')" class="text-xs bg-white hover:bg-indigo-50 text-indigo-700 border border-slate-200 hover:border-indigo-300 px-3 py-1.5 rounded-xl font-bold transition shadow-sm">
+                                💳 بانک تک‌ستونی با ستون تشخیص
+                            </button>
+                            <button onclick="loadSampleFile('sample_bank_dual_col')" class="text-xs bg-white hover:bg-blue-50 text-blue-700 border border-slate-200 hover:border-blue-300 px-3 py-1.5 rounded-xl font-bold transition shadow-sm">
+                                💳 بانک دوستونی (واریز/برداشت)
+                            </button>
+                            <button onclick="loadSampleFile('sample_baskol_weighbridge')" class="text-xs bg-white hover:bg-emerald-50 text-emerald-700 border border-slate-200 hover:border-emerald-300 px-3 py-1.5 rounded-xl font-bold transition shadow-sm">
+                                🚚 قبض باسکول دیجیتال
+                            </button>
+                            <button onclick="loadSampleFile('sample_fruit_sales')" class="text-xs bg-white hover:bg-purple-50 text-purple-700 border border-slate-200 hover:border-purple-300 px-3 py-1.5 rounded-xl font-bold transition shadow-sm">
+                                ⚖️ فاکتور خرید و فروش
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Add File Upload Drop Zone -->
+                    <div id="drop-zone"
+                         ondragover="handleDragOver(event)"
+                         ondragleave="handleDragLeave(event)"
+                         ondrop="handleDrop(event)"
+                         class="border-2 border-dashed border-slate-300 hover:border-emerald-500 bg-gradient-to-b from-slate-50 to-emerald-50/10 hover:bg-emerald-50/30 rounded-3xl p-10 text-center cursor-pointer transition flex flex-col items-center justify-center gap-3.5 group">
+                        
+                        <input type="file" id="file-input" accept=".xlsx,.xls,.csv" class="hidden" onchange="handleFileSelect(event)">
+                        
+                        <div class="w-16 h-16 rounded-2xl bg-white border border-slate-200 shadow-md flex items-center justify-center text-emerald-600 group-hover:scale-110 transition">
+                            <i data-lucide="file-plus" class="w-8 h-8"></i>
+                        </div>
+                        
+                        <div>
+                            <span class="font-black text-slate-800 text-base block">فایل اکسل خود را اینجا بکشید و رها کنید (Add File)</span>
+                            <span class="text-slate-500 text-xs mt-0.5 block">یا برای انتخاب مستقیم از رایانه روی دکمه زیر کلیک فرمایید</span>
+                        </div>
+
+                        <button type="button" onclick="document.getElementById('file-input').click()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs px-6 py-3 rounded-2xl shadow-md transition flex items-center gap-2">
+                            <i data-lucide="plus" class="w-4 h-4 stroke-[3]"></i>
+                            افزودن و بارگذاری فایل اکسل
+                        </button>
+
+                        <div class="flex items-center gap-4 text-[11px] text-slate-400 pt-1">
+                            <span>✓ اکسل مایکروسافت (.xlsx / .xls)</span>
+                            <span>✓ فایل‌های متنی CSV</span>
+                            <span>✓ بدون محدودیت در نام و ستون‌ها</span>
+                        </div>
+                    </div>
+
+                    <!-- File Information Card (If Loaded) -->
+                    <div id="file-meta-card" class="hidden bg-emerald-50/70 border border-emerald-200 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-sm">
+                                <i data-lucide="check" class="w-5 h-5 stroke-[3]"></i>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs text-slate-500">فایل اضافه شده:</span>
+                                    <span id="meta-filename" class="font-black text-slate-900 text-sm"></span>
+                                    <span id="meta-row-count" class="text-xs bg-emerald-200 text-emerald-900 font-bold px-2 py-0.5 rounded-full"></span>
+                                    <span id="meta-col-count" class="text-xs bg-slate-200 text-slate-700 font-bold px-2 py-0.5 rounded-full"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <label class="text-xs font-bold text-slate-600">برگه انتخابی (Sheet):</label>
+                            <select id="sheet-selector" onchange="changeActiveSheet(this.value)" class="bg-white border border-slate-300 rounded-xl text-xs px-3 py-1.5 font-bold focus:ring-2 focus:ring-emerald-500 outline-none">
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Page 1 Bottom Navigation -->
+                <div class="flex justify-end">
+                    <button onclick="goToPage(2)" id="btn-page1-next" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs px-7 py-3 rounded-2xl shadow-md transition flex items-center gap-2">
+                        ادامه به صفحه ۲ (تطبیق ستون‌ها)
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ============================================================== -->
+            <!-- صفحه ۲: تطبیق و نگاشت ستون‌ها (Page 2) -->
+            <!-- ============================================================== -->
+            <div id="wizard-page-2" class="hidden space-y-6">
+                <!-- Specialized Header Controls for Bank Statements -->
+                <div id="bank-controls-box" class="bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900 text-white rounded-3xl p-6 shadow-xl space-y-4">
+                    <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-indigo-700/60">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center">
+                                <i data-lucide="landmark" class="w-5 h-5 text-indigo-200"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-black text-sm text-white">تنظیمات اصلی صورت‌حساب بانکی شرکت مازندشت</h3>
+                                <p class="text-xs text-indigo-200">مشخص فرمایید این فایل مربوط به کدام حساب بانکی است و چیدمان مبالغ آن به چه صورت است.</p>
+                            </div>
+                        </div>
+
+                        <!-- Bank Selector (Top Header Dropdown - Required by User) -->
+                        <div class="flex items-center gap-2 bg-indigo-950/70 px-4 py-2 rounded-2xl border border-indigo-600/50">
+                            <label class="text-xs font-black text-indigo-200 flex items-center gap-1.5">
+                                <i data-lucide="lock" class="w-3.5 h-3.5 text-amber-400"></i>
+                                حساب بانکی مربوطه:
+                            </label>
+                            <select id="bank-select-top" onchange="onTopBankChanged(this.value)" class="bg-white text-slate-900 font-extrabold text-xs rounded-xl px-3 py-1.5 outline-none focus:ring-2 focus:ring-emerald-400 shadow">
+                                <!-- Populated dynamically from INFO.xlsx Banks -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Two-Way Bank Code <-> Name Synchronization Display -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-indigo-950/40 p-3.5 rounded-2xl border border-indigo-700/60 text-xs">
+                        <div class="flex items-center gap-2">
+                            <span class="text-indigo-300 font-bold">کد بانک انتخابی:</span>
+                            <input type="text" id="bank-code-sync-input" oninput="onBankCodeTyped(this.value)" class="bg-white/10 text-emerald-300 font-mono font-black text-xs px-2.5 py-1 rounded-lg border border-indigo-500/50 outline-none w-28 text-center" placeholder="BANK01">
+                            <span class="text-[11px] text-indigo-300">(با تایپ کد، نام اتوماتیک لود می‌شود)</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-indigo-300 font-bold">نام کامل بانک:</span>
+                            <input type="text" id="bank-name-sync-input" oninput="onBankNameTyped(this.value)" class="flex-1 bg-white/10 text-white font-bold text-xs px-2.5 py-1 rounded-lg border border-indigo-500/50 outline-none" placeholder="ملت — جاری شرکت">
+                        </div>
+                    </div>
+
+                    <!-- Amount Column Mode Switcher (Single-column vs Dual-column) -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+                        <!-- Mode Option A: Dual Column -->
+                        <label class="flex items-start gap-3 p-3.5 rounded-2xl bg-indigo-950/40 border-2 border-indigo-500/40 hover:border-emerald-400 cursor-pointer transition">
+                            <input type="radio" name="bank_amt_mode" value="dual" checked onchange="toggleBankAmountMode('dual')" class="mt-1 text-emerald-500 focus:ring-emerald-400">
+                            <div>
+                                <span class="font-bold text-xs text-white block">حالت دو‌ستونی (واریز و برداشت در دو ستون مجزا)</span>
+                                <span class="text-[11px] text-indigo-200 block mt-0.5">فایل بانک دارای ستون مجزای «واریز / بستانکار» و ستون «برداشت / بدهکار» است.</span>
+                            </div>
+                        </label>
+
+                        <!-- Mode Option B: Single Column + Direction -->
+                        <label class="flex items-start gap-3 p-3.5 rounded-2xl bg-indigo-950/40 border-2 border-indigo-500/40 hover:border-emerald-400 cursor-pointer transition">
+                            <input type="radio" name="bank_amt_mode" value="single" onchange="toggleBankAmountMode('single')" class="mt-1 text-emerald-500 focus:ring-emerald-400">
+                            <div>
+                                <span class="font-bold text-xs text-white block">حالت تک‌ستونی (یک ستون مبلغ + ستون تشخیص واریز/برداشت)</span>
+                                <span class="text-[11px] text-indigo-200 block mt-0.5">تمام مبالغ در یک ستون هستند و ستون نوع تراکنش (یا علامت +/-) جهت واریز/برداشت را تعیین می‌کند.</span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Single Column Specific Selectors (Hidden if dual) -->
+                    <div id="single-amount-selectors" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4 bg-indigo-950/80 p-4 rounded-2xl border border-indigo-600">
+                        <div>
+                            <label class="block text-xs font-bold text-indigo-200 mb-1">ستون مبلغ کل تراکنش:</label>
+                            <select id="single-amt-col-select" onchange="triggerInstantPreviewUpdate()" class="w-full bg-white text-slate-800 rounded-xl text-xs px-3 py-2 outline-none font-bold"></select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-indigo-200 mb-1">ستون تشخیص نوع (واریز / برداشت یا +/-):</label>
+                            <select id="single-dir-col-select" onchange="triggerInstantPreviewUpdate()" class="w-full bg-white text-slate-800 rounded-xl text-xs px-3 py-2 outline-none font-bold"></select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Column Mapping Table Container -->
+                <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden p-6 space-y-4">
+                    <div class="flex flex-wrap justify-between items-center gap-3 pb-3 border-b border-slate-200">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-7 h-7 rounded-xl bg-emerald-600 text-white font-black text-xs flex items-center justify-center">۲</span>
+                                <h3 class="font-black text-slate-900 text-sm">جدول تطبیق و سینک ستون‌ها با ساختار فایل سیستم مازندشت</h3>
+                            </div>
+                            <p class="text-xs text-slate-500 mt-1">مشخص فرمایید هر ستون فایل ورودی متناظر با کدام ستون ساختار سیستم است.</p>
+                        </div>
+
+                        <button onclick="runAutoMatch()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1.5 transition shadow-sm">
+                            <i data-lucide="wand-2" class="w-4 h-4"></i>
+                            تطبیق هوشمند خودکار
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-right text-xs">
+                            <thead class="text-slate-500 border-b border-slate-200">
+                                <tr>
+                                    <th class="py-2.5 px-3 font-bold w-1/4">ستون ساختار سیستم مازندشت</th>
+                                    <th class="py-2.5 px-3 font-bold w-20 text-center">وضعیت فیلد</th>
+                                    <th class="py-2.5 px-3 font-bold w-1/3">ستون متناظر فایل ورودی شما</th>
+                                    <th class="py-2.5 px-3 font-bold w-1/3">مقدار پیش‌فرض / ثابت</th>
+                                </tr>
+                            </thead>
+                            <tbody id="mapping-table-body" class="divide-y divide-slate-100">
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Clean & Concat Options -->
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex flex-wrap items-center justify-between gap-4">
+                        <div class="flex flex-wrap items-center gap-5 text-xs font-bold text-slate-700">
+                            <!-- Unmapped Concat Toggle -->
+                            <label class="flex items-center gap-2 cursor-pointer bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-sm text-emerald-900">
+                                <input type="checkbox" id="opt-concat-unmapped" checked onchange="triggerInstantPreviewUpdate()" class="rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4">
+                                <span>الحاق خودکار تمام ستون‌های نگاشت‌نشده به «توضیحات» (Audit Trail)</span>
+                            </label>
+
+                            <label class="flex items-center gap-1.5 cursor-pointer">
+                                <input type="checkbox" id="opt-dates" checked onchange="triggerInstantPreviewUpdate()" class="rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4">
+                                <span>استانداردسازی تاریخ شمسی (۱۴۰۵/۰۷/۰۱)</span>
+                            </label>
+
+                            <label class="flex items-center gap-1.5 cursor-pointer">
+                                <input type="checkbox" id="opt-digits" checked onchange="triggerInstantPreviewUpdate()" class="rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4">
+                                <span>تبدیل اعداد فارسی به انگلیسی</span>
+                            </label>
+
+                            <label class="flex items-center gap-1.5 cursor-pointer">
+                                <input type="checkbox" id="opt-toman" onchange="triggerInstantPreviewUpdate()" class="rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4">
+                                <span>تبدیل تومان به ریال (ضرب در ۱۰)</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Page 2 Bottom Navigation -->
+                <div class="flex justify-between items-center">
+                    <button onclick="goToPage(1)" class="bg-white hover:bg-slate-100 text-slate-700 font-bold text-xs px-6 py-3 rounded-2xl border border-slate-300 transition flex items-center gap-1.5">
+                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        بازگشت به صفحه ۱ (تغییر فایل/مدل)
+                    </button>
+                    <button onclick="goToPage(3)" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs px-7 py-3 rounded-2xl shadow-md transition flex items-center gap-2">
+                        ادامه به صفحه ۳ (پیش‌نمایش و اصلاح دستی)
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ============================================================== -->
+            <!-- صفحه ۳: پیش‌نمایش تخصصی لحظه‌ای با ویرایش دستی (Page 3) -->
+            <!-- ============================================================== -->
+            <div id="wizard-page-3" class="hidden space-y-6">
+                <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-5">
+                    <div class="flex flex-wrap justify-between items-center gap-4">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-7 h-7 rounded-xl bg-emerald-600 text-white font-black text-xs flex items-center justify-center">۳</span>
+                                <h2 class="text-base font-black text-slate-900">پیش‌نمایش تخصصی، تعیین عملیات و ویرایش جزئیات</h2>
+                                <span id="preview-mode-tag" class="bg-indigo-100 text-indigo-900 text-xs font-extrabold px-3 py-0.5 rounded-full border border-indigo-200"></span>
+                            </div>
+                            <p class="text-xs text-slate-500 mt-1">
+                                تاریخ، ساعت و مبالغ برای حفظ اصالت داده‌های بانکی قفل هستند 🔒. می‌توانید نوع عملیات دقیق و حساب اشخاص را مستقیماً برای هر سطر تعیین و ویرایش فرمایید.
+                            </p>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <button onclick="addNewManualRow()" class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1 transition shadow-sm">
+                                <i data-lucide="plus" class="w-4 h-4 text-emerald-600"></i>
+                                افزودن سطر دستی
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Live KPI Cards -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
+                            <span class="text-xs text-slate-500 block font-medium">سطرهای انتخاب‌شده:</span>
+                            <div class="flex items-baseline gap-1 mt-1">
+                                <span id="kpi-selected-rows" class="text-xl font-black text-slate-900">0</span>
+                                <span class="text-xs text-slate-400 font-normal">از <span id="kpi-total-rows">0</span> سطر</span>
+                            </div>
+                        </div>
+
+                        <div id="kpi-box-deposit" class="bg-emerald-50/60 p-3.5 rounded-2xl border border-emerald-200">
+                            <span class="text-xs text-emerald-700 block font-bold">جمع کل واریزی‌ها (ریال):</span>
+                            <div class="flex items-baseline gap-1 mt-1">
+                                <span id="kpi-total-deposit" class="text-xl font-black text-emerald-900">0</span>
+                                <span class="text-xs text-emerald-600">ریال</span>
+                            </div>
+                        </div>
+
+                        <div id="kpi-box-withdrawal" class="bg-rose-50/60 p-3.5 rounded-2xl border border-rose-200">
+                            <span class="text-xs text-rose-700 block font-bold">جمع کل برداشت‌ها (ریال):</span>
+                            <div class="flex items-baseline gap-1 mt-1">
+                                <span id="kpi-total-withdrawal" class="text-xl font-black text-rose-900">0</span>
+                                <span class="text-xs text-rose-600">ریال</span>
+                            </div>
+                        </div>
+
+                        <div id="kpi-box-weight" class="hidden bg-emerald-50/60 p-3.5 rounded-2xl border border-emerald-200">
+                            <span class="text-xs text-emerald-700 block font-bold">جمع وزن باسکول:</span>
+                            <div class="flex items-baseline gap-1 mt-1">
+                                <span id="kpi-total-weight" class="text-xl font-black text-emerald-900">0</span>
+                                <span class="text-xs text-emerald-600">kg</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-amber-50/60 p-3.5 rounded-2xl border border-amber-200">
+                            <span class="text-xs text-amber-700 block font-bold">اعتبارسنجی و وضعیت:</span>
+                            <div class="flex items-baseline gap-1 mt-1">
+                                <span id="kpi-warning-count" class="text-xl font-black text-amber-900">0</span>
+                                <span class="text-xs text-amber-600 font-normal">مورد نیازمند توجه</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mapped Preview Table -->
+                    <div class="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-inner">
+                        <div class="overflow-x-auto max-h-[30rem]">
+                            <table class="w-full text-right text-xs" id="mapped-table">
+                                <thead class="bg-slate-100 text-slate-700 sticky top-0 z-20 border-b border-slate-200" id="mapped-table-head">
+                                </thead>
+                                <tbody class="divide-y divide-slate-100" id="mapped-table-body">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Page 3 Bottom Navigation -->
+                <div class="flex justify-between items-center">
+                    <button onclick="goToPage(2)" class="bg-white hover:bg-slate-100 text-slate-700 font-bold text-xs px-6 py-3 rounded-2xl border border-slate-300 transition flex items-center gap-1.5">
+                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        بازگشت به صفحه ۲ (اصلاح ستون‌ها)
+                    </button>
+                    <button onclick="goToPage(4)" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs px-7 py-3 rounded-2xl shadow-md transition flex items-center gap-2">
+                        ادامه به صفحه ۴ (ادغام و خروجی چاپی)
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ============================================================== -->
+            <!-- صفحه ۴: ادغام قطعی در اکسل سیستم و پرینت استاندارد (Page 4) -->
+            <!-- ============================================================== -->
+            <div id="wizard-page-4" class="hidden space-y-6">
+                <!-- Action Banner -->
+                <div class="bg-gradient-to-r from-emerald-700 via-teal-700 to-indigo-800 text-white p-6 rounded-3xl flex flex-wrap items-center justify-between gap-4 shadow-xl no-print">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center shrink-0">
+                            <i data-lucide="shield-check" class="w-7 h-7 text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-black text-base text-white">آماده ادغام قطعی در فایل‌های اکسل سیستم مازندشت</h3>
+                            <p class="text-xs text-emerald-100 mt-0.5">
+                                با کلیک بر روی دکمه ادغام، پیش از هر تغییری یک پشتیبان امن ذخیره شده و ردیف‌ها با حفظ فرمول‌ها در فایل سیستم ثبت می‌شوند.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <button onclick="window.print()" class="bg-white/20 hover:bg-white/30 text-white font-bold text-xs px-5 py-3 rounded-2xl border border-white/30 transition flex items-center gap-1.5">
+                            <i data-lucide="printer" class="w-4 h-4"></i>
+                            چاپ رسمی صورت‌حساب (Print)
+                        </button>
+                        <button onclick="executeSafeMerge()" id="btn-merge-action" class="bg-white hover:bg-emerald-50 text-emerald-950 font-black text-sm px-7 py-3 rounded-2xl shadow-lg transition hover:scale-105 active:scale-95 flex items-center gap-2">
+                            <i data-lucide="database" class="w-5 h-5 text-emerald-600"></i>
+                            ادغام نهایی با یک کلید
+                        </button>
+                    </div>
+                </div>
+
+                <!-- OFFICIAL PRINTABLE REPORT (Hides Bank Code on Print, Shows Full Bank Name) -->
+                <div id="print-area" class="bg-white rounded-3xl border border-slate-200/90 shadow-sm p-8 space-y-6">
+                    <!-- Formal Printable Header -->
+                    <div class="flex justify-between items-start border-b-2 border-slate-800 pb-4">
+                        <div>
+                            <h2 class="text-lg font-black text-slate-900">شرکت سورتینگ و بسته‌بندی مرکبات مازندشت</h2>
+                            <p class="text-xs text-slate-600 mt-1">باغدشت، شهرستان قائم‌شهر، مازندران | مدیریت: <strong>قاسم زاهدی</strong></p>
+                            <div class="flex items-center gap-4 text-xs text-slate-700 mt-2 font-bold">
+                                <span>گزارش: <span id="print-doc-title" class="text-emerald-700">صورت‌حساب تراکنش‌های بانکی</span></span>
+                                <span>بانک مربوطه: <span id="print-bank-name" class="text-indigo-800"></span></span>
+                            </div>
+                        </div>
+
+                        <div class="text-left text-xs text-slate-500 font-mono space-y-1">
+                            <div>تاریخ گزارش: <span id="print-report-date" class="text-slate-800 font-bold"></span></div>
+                            <div>تعداد تراکنش‌ها: <span id="print-row-count" class="text-slate-800 font-bold"></span></div>
+                            <div>نسخه سیستمی مازندشت</div>
+                        </div>
+                    </div>
+
+                    <!-- Printable Statement Table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-right text-xs border border-slate-300 border-collapse" id="print-table">
+                            <thead class="bg-slate-100 text-slate-900 border-b border-slate-300 font-black">
+                                <tr>
+                                    <th class="py-2.5 px-3 border border-slate-300 w-12 text-center">ردیف</th>
+                                    <th class="py-2.5 px-3 border border-slate-300 whitespace-nowrap">تاریخ</th>
+                                    <th class="py-2.5 px-3 border border-slate-300 whitespace-nowrap">ساعت</th>
+                                    <!-- NOTICE: Raw Bank Code is HIDDEN on print, Full Bank Name is displayed! -->
+                                    <th class="py-2.5 px-3 border border-slate-300 whitespace-nowrap">نام کامل بانک</th>
+                                    <th class="py-2.5 px-3 border border-slate-300 whitespace-nowrap">شماره سند / پیگیری</th>
+                                    <th class="py-2.5 px-3 border border-slate-300 whitespace-nowrap text-emerald-900">واریز (ریال)</th>
+                                    <th class="py-2.5 px-3 border border-slate-300 whitespace-nowrap text-rose-900">برداشت (ریال)</th>
+                                    <th class="py-2.5 px-3 border border-slate-300 whitespace-nowrap">نوع عملیات مالی / سرفصل</th>
+                                    <th class="py-2.5 px-3 border border-slate-300 whitespace-nowrap">طرف حساب</th>
+                                    <th class="py-2.5 px-3 border border-slate-300 min-w-[200px]">توضیحات و شرح</th>
+                                </tr>
+                            </thead>
+                            <tbody id="print-table-body" class="divide-y divide-slate-200">
+                                <!-- Populated dynamically from verified rows -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Printable Footer -->
+                    <div class="flex justify-between items-center text-xs text-slate-500 pt-4 border-t border-slate-200 font-medium">
+                        <div>امضای امور مالی و حسابداری: ............................</div>
+                        <div>تأیید مدیریت (قاسم زاهدی): ............................</div>
+                        <div>صفحه ۱ از ۱</div>
+                    </div>
+                </div>
+
+                <!-- Page 4 Bottom Navigation -->
+                <div class="flex justify-start no-print">
+                    <button onclick="goToPage(3)" class="bg-white hover:bg-slate-100 text-slate-700 font-bold text-xs px-6 py-3 rounded-2xl border border-slate-300 transition flex items-center gap-1.5">
+                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        بازگشت به صفحه ۳ (اصلاح داده‌ها)
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- TAB 2: تنظیمات و مدیریت بانک‌ها (Bank Settings - INFO.xlsx) -->
+        <!-- ============================================================== -->
+        <div id="main-tab-banks" class="hidden space-y-6">
+            <div class="bg-white rounded-3xl border border-slate-200/90 shadow-sm p-6 space-y-5">
+                <div class="flex flex-wrap justify-between items-center gap-4 pb-4 border-b border-slate-200">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-9 h-9 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold">
+                                <i data-lucide="landmark" class="w-5 h-5"></i>
+                            </div>
+                            <h2 class="text-base font-black text-slate-900">مدیریت و تنظیمات حساب‌های بانکی شرکت (ذخیره مستقیم در INFO.xlsx)</h2>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-1">
+                            هرگونه تغییر در کد بانک، نام بانک، شماره حساب یا توضیحات در جدول زیر با یک کلیک مستقیماً در برگه <strong>Banks</strong> فایل مادر <strong>INFO.xlsx</strong> ذخیره می‌شود.
+                        </p>
+                    </div>
+
+                    <button onclick="saveBanksToMasterInfo()" id="btn-save-banks" class="bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs px-6 py-3 rounded-2xl shadow-md transition flex items-center gap-2">
+                        <i data-lucide="save" class="w-4 h-4"></i>
+                        ذخیره تغییرات در فایل مادر INFO.xlsx
+                    </button>
+                </div>
+
+                <!-- Bank Columns Layout (Arranged in clean vertical columns as requested) -->
+                <div class="border border-slate-200 rounded-2xl overflow-hidden shadow-inner">
+                    <table class="w-full text-right text-xs">
+                        <thead class="bg-slate-100 text-slate-700 border-b border-slate-200 font-black">
+                            <tr>
+                                <th class="py-3 px-3 w-12 text-center">ردیف</th>
+                                <th class="py-3 px-3 w-32 font-black text-indigo-950">۱. کد بانک (یکتا)</th>
+                                <th class="py-3 px-3 w-64 font-black text-slate-900">۲. نام کامل و نمایشی بانک</th>
+                                <th class="py-3 px-3 w-60 font-black text-slate-800">۳. شماره حساب / شبا</th>
+                                <th class="py-3 px-3 font-black text-slate-800">۴. توضیحات و شعبه</th>
+                                <th class="py-3 px-3 w-20 text-center font-bold text-slate-600">وضعیت</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bank-settings-tbody" class="divide-y divide-slate-100">
+                            <!-- Populated dynamically via JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="bg-indigo-50/60 p-4 rounded-2xl border border-indigo-200 text-xs text-indigo-900 flex items-center gap-3">
+                    <i data-lucide="info" class="w-5 h-5 text-indigo-600 shrink-0"></i>
+                    <p>
+                        <strong>نکته حسابداری:</strong> کدهای بانک ثابت هستند (BANK01 تا BANK10) و در تمام فرمول‌های دفاتر تراکنش استفاده می‌شوند. با ویرایش عنوان یا شماره حساب و فشردن دکمه ذخیره، فایل مادر INFO و سربرگ تمام برگه‌ها به‌صورت خودکار به‌روزرسانی می‌شوند.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- TAB 3: فایل‌های ۹گانه سیستم -->
+        <!-- ============================================================== -->
+        <div id="main-tab-files" class="hidden space-y-6">
+            <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-4">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-base font-black text-slate-900 flex items-center gap-2">
+                            <i data-lucide="folders" class="w-5 h-5 text-emerald-600"></i>
+                            فایل‌های ۹گانه اکسل سیستم مازندشت
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-0.5">وضعیت، حجم و آخرین تغییرات دفاتر اصلی سورتینگ مرکبات</p>
+                    </div>
+                    <button onclick="loadSystemStatus()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1.5 transition">
+                        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                        تازه‌سازی
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="system-files-grid">
+                    <!-- Dynamic cards injected via JS -->
+                </div>
+            </div>
+
+            <div id="system-viewer-box" class="hidden bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-4">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                            <i data-lucide="table" class="w-4 h-4 text-emerald-600"></i>
+                            داده‌های جاری فایل: <span id="view-file-title" class="font-mono text-emerald-700 font-bold"></span>
+                        </h3>
+                        <p class="text-xs text-slate-500 mt-0.5">برگه انتخابی: <span id="view-sheet-title" class="font-bold"></span></p>
+                    </div>
+                    <button onclick="closeSystemViewer()" class="text-xs text-slate-500 hover:text-slate-800 px-3 py-1.5 rounded-xl bg-slate-100 font-bold">
+                        بستن پنجره
+                    </button>
+                </div>
+                <div class="overflow-x-auto border border-slate-200 rounded-2xl max-h-96">
+                    <table class="w-full text-right text-xs" id="system-view-table">
+                        <tbody id="system-view-body" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- TAB 4: نسخه‌های پشتیبان -->
+        <!-- ============================================================== -->
+        <div id="main-tab-backups" class="hidden space-y-6">
+            <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-4">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-base font-black text-slate-900 flex items-center gap-2">
+                            <i data-lucide="history" class="w-5 h-5 text-indigo-600"></i>
+                            نسخه‌های پشتیبان خودکار (Backups)
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-0.5">پیش از هر عملیات ادغام، به‌صورت خودکار یک نسخه با مهر زمانی ذخیره می‌شود.</p>
+                    </div>
+                    <button onclick="loadBackups()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1.5 transition">
+                        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                        تازه‌سازی
+                    </button>
+                </div>
+
+                <div class="border border-slate-200 rounded-2xl overflow-hidden">
+                    <table class="w-full text-right text-xs">
+                        <thead class="bg-slate-50 text-slate-700 border-b border-slate-200">
+                            <tr>
+                                <th class="py-3 px-4 font-bold">نام فایل پشتیبان</th>
+                                <th class="py-3 px-4 font-bold">تاریخ و ساعت ایجاد</th>
+                                <th class="py-3 px-4 font-bold">حجم</th>
+                                <th class="py-3 px-4 font-bold text-center">دانلود</th>
+                            </tr>
+                        </thead>
+                        <tbody id="backups-table-body" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- SUCCESS MODAL AFTER MERGE -->
+    <div id="merge-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 no-print">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-100 text-center animate-in fade-in zoom-in duration-200">
+            <div class="w-16 h-16 rounded-3xl bg-emerald-100 text-emerald-600 mx-auto flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                <i data-lucide="check" class="w-8 h-8 stroke-[3]"></i>
+            </div>
+            <div>
+                <h3 class="text-lg font-black text-slate-900">عملیات ادغام با موفقیت ثبت شد!</h3>
+                <p class="text-xs text-slate-500 mt-1">سطرهای جدید در فایل سیستم اکسل با حفظ کامل فرمول‌ها درج شدند.</p>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs text-right space-y-2.5">
+                <div class="flex justify-between">
+                    <span class="text-slate-500">فایل هدف:</span>
+                    <span id="modal-target-file" class="font-bold font-mono text-slate-900"></span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-500">برگه هدف:</span>
+                    <span id="modal-target-sheet" class="font-bold text-slate-900"></span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-500">سطرهای اضافه‌شده:</span>
+                    <span id="modal-merged-count" class="font-extrabold text-emerald-700"></span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-500">محدوده سطرها در شیت:</span>
+                    <span id="modal-row-range" class="font-bold font-mono text-slate-900"></span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-500">نسخه پشتیبان تهیه شده:</span>
+                    <span id="modal-backup-name" class="font-bold font-mono text-indigo-700 truncate max-w-[200px]"></span>
+                </div>
+            </div>
+
+            <div class="flex gap-2 pt-2">
+                <a id="modal-download-btn" href="#" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs py-3 rounded-2xl shadow transition flex items-center justify-center gap-1.5">
+                    <i data-lucide="download" class="w-4 h-4"></i>
+                    دانلود فایل اکسل به‌روز شده
+                </a>
+                <button onclick="closeModalAndRefresh()" class="px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-2xl transition">
+                    بستن
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="hidden fixed bottom-5 left-5 z-50 bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-xl text-xs flex items-center gap-2 border border-slate-800 no-print">
+        <i data-lucide="info" class="w-4 h-4 text-emerald-400"></i>
+        <span id="toast-message">پیام سیستم</span>
+    </div>
+
+    <!-- MAIN JAVASCRIPT APPLICATION LOGIC -->
+    <script>
+        // Global State
+        let currentPage = 1;
+        let selectedFileType = 'transactions'; // 'transactions', 'baskol', 'trade'
+        let parsedData = null;
+        let activeSheet = null;
+        let schemas = {};
+        let bankOperations = [];
+        let accountsList = [];
+        let banksList = [];
+        let currentMapping = {};
+        let customDefaults = {};
+        let mappedResult = null;
+        let bankAmountMode = 'dual'; // 'dual' or 'single'
+
+        function safeCreateIcons() {
+            if (window.lucide && typeof window.lucide.createIcons === 'function') {
+                try { window.lucide.createIcons(); } catch (e) { }
+            }
+        }
+
+        // Initialize on DOM Ready
+        document.addEventListener('DOMContentLoaded', async () => {
+            safeCreateIcons();
+            await fetchSchemas();
+            await fetchAccounts();
+            await fetchBanks();
+            await loadSystemStatus();
+            await loadBackups();
+            selectFileType('transactions');
+            goToPage(1);
+        });
+
+        // PAGE-BY-PAGE NAVIGATION (Strictly One Page at a Time)
+        function goToPage(pageNum) {
+            if (pageNum > 1 && !parsedData) {
+                showToast('لطفاً ابتدا فایل اکسل را بارگذاری یا یکی از گزینه‌های تست سریع را انتخاب فرمایید.', true);
+                return;
+            }
+
+            currentPage = pageNum;
+
+            // Hide all 4 pages, show only target page
+            for (let i = 1; i <= 4; i++) {
+                const pageEl = document.getElementById(`wizard-page-${i}`);
+                const btnEl = document.getElementById(`step-btn-${i}`);
+                const circleEl = document.getElementById(`step-circle-${i}`);
+                const lineEl = document.getElementById(`stepper-line-${i}`);
+
+                if (i === pageNum) {
+                    pageEl.classList.remove('hidden');
+                    btnEl.classList.remove('opacity-50');
+                    circleEl.className = 'w-9 h-9 rounded-2xl bg-emerald-600 text-white font-black flex items-center justify-center text-sm shadow-md shadow-emerald-500/20';
+                } else if (i < pageNum) {
+                    pageEl.classList.add('hidden');
+                    btnEl.classList.remove('opacity-50');
+                    circleEl.className = 'w-9 h-9 rounded-2xl bg-emerald-100 text-emerald-800 font-black flex items-center justify-center text-sm';
+                } else {
+                    pageEl.classList.add('hidden');
+                    btnEl.classList.add('opacity-50');
+                    circleEl.className = 'w-9 h-9 rounded-2xl bg-slate-200 text-slate-600 font-black flex items-center justify-center text-sm';
+                }
+            }
+
+            // On entering Page 2, ensure mapping is populated
+            if (pageNum === 2) {
+                renderMappingTable();
+                if (Object.keys(currentMapping).length === 0) {
+                    runAutoMatch();
+                }
+            }
+
+            // On entering Page 3, trigger instant preview render
+            if (pageNum === 3) {
+                triggerInstantPreviewUpdate();
+            }
+
+            // On entering Page 4, populate the Printable Report View
+            if (pageNum === 4) {
+                renderPrintableReport();
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            safeCreateIcons();
+        }
+
+        // Top Main Tab Navigation (Wizard vs Bank Settings vs System Files vs Backups)
+        function switchMainTab(tab) {
+            ['wizard', 'banks', 'files', 'backups'].forEach(t => {
+                const el = document.getElementById(`main-tab-${t}`);
+                const btn = document.getElementById(`nav-btn-${t}`);
+                if (t === tab) {
+                    el.classList.remove('hidden');
+                    btn.classList.add('bg-white', 'text-emerald-700', 'shadow-sm');
+                    btn.classList.remove('text-slate-600');
+                } else {
+                    el.classList.add('hidden');
+                    btn.classList.remove('bg-white', 'text-emerald-700', 'shadow-sm');
+                    btn.classList.add('text-slate-600');
+                }
+            });
+
+            if (tab === 'banks') {
+                renderBankSettingsTable();
+            }
+            safeCreateIcons();
+        }
+
+        // Fetch Metadata from APIs
+        async function fetchSchemas() {
+            try {
+                const res = await fetch('/api/schemas');
+                const data = await res.json();
+                schemas = data.schemas;
+                bankOperations = data.bank_operations;
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function fetchAccounts() {
+            try {
+                const res = await fetch('/api/accounts-list');
+                const data = await res.json();
+                accountsList = data.accounts;
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function fetchBanks() {
+            try {
+                const res = await fetch('/api/banks-list');
+                const data = await res.json();
+                banksList = data.banks;
+                populateTopBankDropdown();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function populateTopBankDropdown() {
+            const topSelect = document.getElementById('bank-select-top');
+            if (topSelect && banksList.length > 0) {
+                topSelect.innerHTML = '';
+                banksList.forEach(b => {
+                    const opt = document.createElement('option');
+                    opt.value = b.code;
+                    opt.innerText = `${b.code} – ${b.title}`;
+                    topSelect.appendChild(opt);
+                });
+                onTopBankChanged(banksList[0].code);
+            }
+        }
+
+        // TWO-WAY SYNCHRONIZATION: BANK CODE <-> BANK NAME
+        function onTopBankChanged(bankCode) {
+            const found = banksList.find(b => b.code.toUpperCase() === bankCode.toUpperCase());
+            if (found) {
+                document.getElementById('bank-code-sync-input').value = found.code;
+                document.getElementById('bank-name-sync-input').value = found.title;
+            }
+            triggerInstantPreviewUpdate();
+        }
+
+        function onBankCodeTyped(typedCode) {
+            const code = typedCode.trim().toUpperCase();
+            const found = banksList.find(b => b.code.toUpperCase() === code);
+            if (found) {
+                document.getElementById('bank-name-sync-input').value = found.title;
+                document.getElementById('bank-select-top').value = found.code;
+                triggerInstantPreviewUpdate();
+            }
+        }
+
+        function onBankNameTyped(typedName) {
+            const name = typedName.trim().toLowerCase();
+            const found = banksList.find(b => b.title.toLowerCase().includes(name));
+            if (found) {
+                document.getElementById('bank-code-sync-input').value = found.code;
+                document.getElementById('bank-select-top').value = found.code;
+                triggerInstantPreviewUpdate();
+            }
+        }
+
+        // BANK SETTINGS PANEL (Render & Save directly to INFO.xlsx)
+        function renderBankSettingsTable() {
+            const tbody = document.getElementById('bank-settings-tbody');
+            tbody.innerHTML = '';
+
+            banksList.forEach((b, idx) => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50 transition';
+                tr.innerHTML = `
+                    <td class="py-2.5 px-3 text-center text-slate-400 font-mono">${idx + 1}</td>
+                    <td class="py-2.5 px-3 font-mono font-bold text-indigo-950">
+                        <input type="text" id="bank-edit-code-${idx}" value="${b.code}" class="w-24 bg-white border border-slate-300 rounded-lg px-2 py-1 font-mono font-bold text-xs outline-none">
+                    </td>
+                    <td class="py-2.5 px-3">
+                        <input type="text" id="bank-edit-title-${idx}" value="${b.title}" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1 font-bold text-xs outline-none">
+                    </td>
+                    <td class="py-2.5 px-3 font-mono">
+                        <input type="text" id="bank-edit-acc-${idx}" value="${b.account_no || ''}" placeholder="شماره حساب یا شبا..." class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1 font-mono text-xs outline-none">
+                    </td>
+                    <td class="py-2.5 px-3">
+                        <input type="text" id="bank-edit-notes-${idx}" value="${b.notes || ''}" placeholder="شعبه، نام مدیر یا توضیحات..." class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-xs outline-none">
+                    </td>
+                    <td class="py-2.5 px-3 text-center">
+                        <span class="text-xs font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md">فعال</span>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function saveBanksToMasterInfo() {
+            const updatedBanks = [];
+            for (let idx = 0; idx < banksList.length; idx++) {
+                const code = document.getElementById(`bank-edit-code-${idx}`).value.trim();
+                const title = document.getElementById(`bank-edit-title-${idx}`).value.trim();
+                const account_no = document.getElementById(`bank-edit-acc-${idx}`).value.trim();
+                const notes = document.getElementById(`bank-edit-notes-${idx}`).value.trim();
+                updatedBanks.push({
+                    code: code,
+                    title: title,
+                    account_no: account_no,
+                    notes: notes,
+                    opening_balance: banksList[idx].opening_balance || 0,
+                    active: true
+                });
+            }
+
+            const btn = document.getElementById('btn-save-banks');
+            btn.disabled = true;
+            btn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> در حال ذخیره در INFO.xlsx...';
+            safeCreateIcons();
+
+            try {
+                const res = await fetch('/api/save-banks', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ banks: updatedBanks })
+                });
+                if (!res.ok) throw new Error('خطا در ذخیره اطلاعات بانک‌ها');
+                const result = await res.json();
+                showToast(result.message);
+                await fetchBanks();
+                await loadBackups();
+            } catch (err) {
+                showToast(err.message, true);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> ذخیره تغییرات در فایل مادر INFO.xlsx';
+                safeCreateIcons();
+            }
+        }
+
+        // File Type Selection
+        function selectFileType(typeId) {
+            selectedFileType = typeId;
+            currentMapping = {};
+
+            ['transactions', 'baskol', 'trade'].forEach(t => {
+                const card = document.getElementById(`type-card-${t}`);
+                if (t === typeId) {
+                    card.className = 'p-5 rounded-2xl border-2 border-indigo-600 bg-indigo-50/40 ring-2 ring-indigo-500/20 cursor-pointer transition flex items-start gap-3.5 shadow-sm';
+                } else {
+                    card.className = 'p-5 rounded-2xl border-2 border-slate-200 hover:border-emerald-400 bg-white hover:bg-slate-50 cursor-pointer transition flex items-start gap-3.5 shadow-sm';
+                }
+            });
+
+            // Toggle Bank Controls Box visibility
+            const bankBox = document.getElementById('bank-controls-box');
+            if (typeId === 'transactions') {
+                bankBox.classList.remove('hidden');
+            } else {
+                bankBox.classList.add('hidden');
+            }
+
+            // Update Preview Mode Tag
+            const modeTag = document.getElementById('preview-mode-tag');
+            if (typeId === 'transactions') modeTag.innerText = 'صورت‌حساب و تراکنش‌های بانکی';
+            else if (typeId === 'baskol') modeTag.innerText = 'ورود و خروج بار و باسکول';
+            else if (typeId === 'trade') modeTag.innerText = 'فاکتورهای خرید و فروش مرکبات';
+
+            // Toggle KPI boxes
+            if (typeId === 'baskol') {
+                document.getElementById('kpi-box-deposit').classList.add('hidden');
+                document.getElementById('kpi-box-withdrawal').classList.add('hidden');
+                document.getElementById('kpi-box-weight').classList.remove('hidden');
+            } else {
+                document.getElementById('kpi-box-deposit').classList.remove('hidden');
+                document.getElementById('kpi-box-withdrawal').classList.remove('hidden');
+                document.getElementById('kpi-box-weight').classList.add('hidden');
+            }
+
+            if (parsedData) {
+                renderMappingTable();
+                runAutoMatch();
+            }
+            safeCreateIcons();
+        }
+
+        // Toggle Bank Amount Mode (Dual vs Single)
+        function toggleBankAmountMode(mode) {
+            bankAmountMode = mode;
+            const singleSelectors = document.getElementById('single-amount-selectors');
+            if (mode === 'single') {
+                singleSelectors.classList.remove('hidden');
+                populateSingleAmountSelectors();
+            } else {
+                singleSelectors.classList.add('hidden');
+            }
+            renderMappingTable();
+            triggerInstantPreviewUpdate();
+        }
+
+        function populateSingleAmountSelectors() {
+            if (!parsedData || !activeSheet) return;
+            const cols = parsedData.sheets[activeSheet].columns;
+
+            const amtSelect = document.getElementById('single-amt-col-select');
+            const dirSelect = document.getElementById('single-dir-col-select');
+            amtSelect.innerHTML = '<option value="">(انتخاب ستون مبلغ کل)</option>';
+            dirSelect.innerHTML = '<option value="">(انتخاب ستون تشخیص یا نوع)</option>';
+
+            cols.forEach(c => {
+                const opt1 = document.createElement('option');
+                opt1.value = c; opt1.innerText = c;
+                if (c.includes('مبلغ') || c.includes('amount') || c.includes('تراکنش')) opt1.selected = true;
+                amtSelect.appendChild(opt1);
+
+                const opt2 = document.createElement('option');
+                opt2.value = c; opt2.innerText = c;
+                if (c.includes('تشخیص') || c.includes('نوع') || c.includes('واریز') || c.includes('type')) opt2.selected = true;
+                dirSelect.appendChild(opt2);
+            });
+        }
+
+        // Drag & Drop Handlers
+        function handleDragOver(e) {
+            e.preventDefault(); e.stopPropagation();
+            document.getElementById('drop-zone').classList.add('border-emerald-500', 'bg-emerald-50/50');
+        }
+        function handleDragLeave(e) {
+            e.preventDefault(); e.stopPropagation();
+            document.getElementById('drop-zone').classList.remove('border-emerald-500', 'bg-emerald-50/50');
+        }
+        function handleDrop(e) {
+            e.preventDefault(); e.stopPropagation();
+            document.getElementById('drop-zone').classList.remove('border-emerald-500', 'bg-emerald-50/50');
+            const dt = e.dataTransfer;
+            if (dt && dt.files && dt.files.length > 0) uploadSingleFile(dt.files[0]);
+        }
+        function handleFileSelect(e) {
+            if (e.target.files && e.target.files[0]) uploadSingleFile(e.target.files[0]);
+        }
+
+        // Upload Single File
+        async function uploadSingleFile(file) {
+            showToast(`در حال خواندن فایل: ${file.name}...`);
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.detail || 'خطا در خواندن فایل اکسل');
+                }
+                parsedData = await res.json();
+                handleParsedDataSuccess();
+                showToast('فایل با موفقیت بارگذاری شد.');
+                // Automatically go to Page 2 after file upload
+                setTimeout(() => goToPage(2), 500);
+            } catch (err) {
+                showToast(err.message, true);
+            }
+        }
+
+        // Load Pre-built Sample File
+        async function loadSampleFile(sampleId) {
+            showToast('در حال بارگذاری نمونه...');
+            try {
+                const formData = new FormData();
+                formData.append('sample_id', sampleId);
+                const res = await fetch('/api/load-sample', { method: 'POST', body: formData });
+                if (!res.ok) throw new Error('خطا در بارگذاری نمونه');
+                parsedData = await res.json();
+
+                if (sampleId === 'sample_bank_single_col') {
+                    selectFileType('transactions');
+                    document.querySelector('input[name="bank_amt_mode"][value="single"]').checked = true;
+                    toggleBankAmountMode('single');
+                } else if (sampleId === 'sample_bank_dual_col') {
+                    selectFileType('transactions');
+                    document.querySelector('input[name="bank_amt_mode"][value="dual"]').checked = true;
+                    toggleBankAmountMode('dual');
+                } else if (sampleId === 'sample_baskol_weighbridge') {
+                    selectFileType('baskol');
+                } else if (sampleId === 'sample_fruit_sales') {
+                    selectFileType('trade');
+                }
+
+                handleParsedDataSuccess();
+                showToast('فایل نمونه بارگذاری شد.');
+                // Go to Page 2
+                setTimeout(() => goToPage(2), 400);
+            } catch (err) {
+                showToast(err.message, true);
+            }
+        }
+
+        function handleParsedDataSuccess() {
+            if (!parsedData) return;
+
+            document.getElementById('meta-filename').innerText = parsedData.filename;
+            
+            const selector = document.getElementById('sheet-selector');
+            selector.innerHTML = '';
+            parsedData.sheet_names.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s; opt.innerText = s;
+                selector.appendChild(opt);
+            });
+            activeSheet = parsedData.current_sheet || parsedData.sheet_names[0];
+            selector.value = activeSheet;
+
+            const sheet = parsedData.sheets[activeSheet];
+            document.getElementById('meta-row-count').innerText = `${sheet.total_rows} ردیف داده`;
+            document.getElementById('meta-col-count').innerText = `${sheet.columns.length} ستون`;
+
+            document.getElementById('file-meta-card').classList.remove('hidden');
+
+            if (selectedFileType === 'transactions' && bankAmountMode === 'single') {
+                populateSingleAmountSelectors();
+            }
+
+            renderMappingTable();
+            safeCreateIcons();
+        }
+
+        function changeActiveSheet(sheetName) {
+            activeSheet = sheetName;
+            const sheet = parsedData.sheets[activeSheet];
+            document.getElementById('meta-row-count').innerText = `${sheet.total_rows} ردیف داده`;
+            document.getElementById('meta-col-count').innerText = `${sheet.columns.length} ستون`;
+            renderMappingTable();
+            runAutoMatch();
+        }
+
+        // Render Column Mapping Table
+        function renderMappingTable() {
+            const schema = schemas[selectedFileType];
+            if (!schema) return;
+
+            const sheet = parsedData && activeSheet ? parsedData.sheets[activeSheet] : null;
+            const sourceCols = sheet ? sheet.columns : [];
+
+            const tbody = document.getElementById('mapping-table-body');
+            tbody.innerHTML = '';
+
+            schema.columns.forEach(tCol => {
+                if (selectedFileType === 'transactions' && bankAmountMode === 'single' && (tCol.key === 'col13' || tCol.key === 'col14')) {
+                    return;
+                }
+
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50 transition';
+
+                const reqBadge = tCol.required
+                    ? '<span class="text-[10px] bg-rose-100 text-rose-700 font-extrabold px-2 py-0.5 rounded-md">الزامی</span>'
+                    : '<span class="text-[10px] bg-slate-100 text-slate-500 font-bold px-2 py-0.5 rounded-md">اختیاری</span>';
+
+                // Source Column Dropdown (triggers INSTANT PREVIEW on change!)
+                let selectHtml = `<select id="map-select-${tCol.key}" onchange="onMappingChanged('${tCol.key}', this.value)" class="w-full bg-white border border-slate-300 rounded-xl text-xs px-2.5 py-1.5 focus:ring-2 focus:ring-emerald-500 outline-none font-semibold">`;
+                selectHtml += '<option value="">(انتخاب نشده / پیش‌فرض)</option>';
+                sourceCols.forEach(sc => {
+                    const isSelected = currentMapping[tCol.key] === sc ? 'selected' : '';
+                    selectHtml += `<option value="${sc}" ${isSelected}>${sc}</option>`;
+                });
+                selectHtml += '</select>';
+
+                const curDef = customDefaults[tCol.key] !== undefined ? customDefaults[tCol.key] : (tCol.default || '');
+                let defaultHtml = '';
+                if (tCol.type === 'select') {
+                    defaultHtml = `<select id="def-val-${tCol.key}" onchange="onDefaultChanged('${tCol.key}', this.value)" class="w-full bg-slate-50 border border-slate-300 rounded-xl text-xs px-2 py-1.5 outline-none font-medium">`;
+                    tCol.options.forEach(opt => {
+                        const sel = curDef === opt ? 'selected' : '';
+                        defaultHtml += `<option value="${opt}" ${sel}>${opt}</option>`;
+                    });
+                    defaultHtml += '</select>';
+                } else {
+                    defaultHtml = `<input type="text" id="def-val-${tCol.key}" value="${curDef}" placeholder="${tCol.hint || ''}" onchange="onDefaultChanged('${tCol.key}', this.value)" class="w-full bg-slate-50 border border-slate-300 rounded-xl text-xs px-2.5 py-1.5 outline-none font-medium">`;
+                }
+
+                tr.innerHTML = `
+                    <td class="py-2.5 px-3">
+                        <span class="font-extrabold text-slate-900 block">${tCol.title}</span>
+                        <span class="text-[11px] text-slate-400 block">${tCol.hint || ''}</span>
+                    </td>
+                    <td class="py-2.5 px-3 text-center">${reqBadge}</td>
+                    <td class="py-2.5 px-3">${selectHtml}</td>
+                    <td class="py-2.5 px-3">${defaultHtml}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            safeCreateIcons();
+        }
+
+        // Live Real-Time Mapping Handlers
+        function onMappingChanged(targetKey, sourceCol) {
+            currentMapping[targetKey] = sourceCol;
+            triggerInstantPreviewUpdate();
+        }
+
+        function onDefaultChanged(targetKey, val) {
+            customDefaults[targetKey] = val;
+            triggerInstantPreviewUpdate();
+        }
+
+        // Auto Match Button
+        async function runAutoMatch() {
+            if (!parsedData || !activeSheet) return;
+            const sourceCols = parsedData.sheets[activeSheet].columns;
+            try {
+                const res = await fetch('/api/auto-match', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        source_columns: sourceCols,
+                        target_module: selectedFileType
+                    })
+                });
+                const data = await res.json();
+                currentMapping = data.mapping;
+                renderMappingTable();
+                triggerInstantPreviewUpdate();
+                showToast('تطبیق هوشمند ستون‌ها انجام و پیش‌نمایش به‌روز شد.');
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // Trigger Real-Time Instant Preview Calculation
+        async function triggerInstantPreviewUpdate() {
+            if (!parsedData || !activeSheet) return;
+            const sheet = parsedData.sheets[activeSheet];
+
+            const selectedBank = document.getElementById('bank-select-top') ? document.getElementById('bank-select-top').value : 'BANK01';
+            const singleAmtCol = document.getElementById('single-amt-col-select') ? document.getElementById('single-amt-col-select').value : '';
+            const singleDirCol = document.getElementById('single-dir-col-select') ? document.getElementById('single-dir-col-select').value : '';
+
+            const options = {
+                normalize_dates: document.getElementById('opt-dates').checked,
+                clean_digits: document.getElementById('opt-digits').checked,
+                toman_to_rial: document.getElementById('opt-toman').checked,
+                concat_unmapped: document.getElementById('opt-concat-unmapped').checked,
+                bank_amount_mode: bankAmountMode,
+                single_amount_col: singleAmtCol,
+                direction_col: singleDirCol,
+                selected_bank: selectedBank
+            };
+
+            try {
+                const res = await fetch('/api/preview-mapped', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        raw_rows: sheet.rows,
+                        target_module: selectedFileType,
+                        column_mapping: currentMapping,
+                        custom_defaults: customDefaults,
+                        options: options
+                    })
+                });
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.detail || 'خطا در ساخت پیش‌نمایش');
+                }
+                mappedResult = await res.json();
+                renderSpecializedPreviewTable();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // Render Tailored Preview Table per File Type
+        function renderSpecializedPreviewTable() {
+            if (!mappedResult) return;
+
+            const thead = document.getElementById('mapped-table-head');
+            const tbody = document.getElementById('mapped-table-body');
+            thead.innerHTML = '';
+            tbody.innerHTML = '';
+
+            let headHtml = `<tr>
+                <th class="py-3 px-3 w-10 text-center"><input type="checkbox" checked onchange="toggleAllRows(this.checked)" class="rounded text-emerald-600 focus:ring-emerald-500"></th>
+                <th class="py-3 px-3 w-12 text-center font-bold text-slate-500">ردیف</th>`;
+
+            if (selectedFileType === 'transactions') {
+                headHtml += `
+                    <th class="py-3 px-3 font-bold text-slate-700 whitespace-nowrap">تاریخ <i data-lucide="lock" class="w-3 h-3 inline text-slate-400"></i></th>
+                    <th class="py-3 px-3 font-bold text-slate-700 whitespace-nowrap">ساعت <i data-lucide="lock" class="w-3 h-3 inline text-slate-400"></i></th>
+                    <th class="py-3 px-3 font-bold text-slate-700 whitespace-nowrap">کد بانک / نام بانک</th>
+                    <th class="py-3 px-3 font-bold text-slate-700 whitespace-nowrap">شماره سند / پیگیری</th>
+                    <th class="py-3 px-3 font-bold text-emerald-800 whitespace-nowrap">واریز (ریال) <i data-lucide="lock" class="w-3 h-3 inline text-emerald-500"></i></th>
+                    <th class="py-3 px-3 font-bold text-rose-800 whitespace-nowrap">برداشت (ریال) <i data-lucide="lock" class="w-3 h-3 inline text-rose-500"></i></th>
+                    <th class="py-3 px-3 font-bold text-indigo-900 whitespace-nowrap w-64">نوع عملیات مالی (ترازنامه / سود و زیان)</th>
+                    <th class="py-3 px-3 font-bold text-indigo-900 whitespace-nowrap w-56">طرف حساب (INFO)</th>
+                    <th class="py-3 px-3 font-bold text-slate-700 whitespace-nowrap">سرفصل / بابت</th>
+                    <th class="py-3 px-3 font-bold text-slate-700 whitespace-nowrap min-w-[280px]">توضیحات (شامل ستون‌های نگاشت‌نشده)</th>
+                `;
+            } else if (selectedFileType === 'baskol') {
+                headHtml += `
+                    <th class="py-3 px-3 font-bold text-slate-700 whitespace-nowrap">قبض</th>
+                    <th class="py-3 px-3 font-bold text-slate-700 whitespace-nowrap">تاریخ</th>
+                    <th class="py-3 px-3 font-bold text-slate-700 whitespace-nowrap">نوع عملیات</th>
+                    <th class="py-3 px-3 font-bold text-slate-700 whitespace-nowrap">طرف حساب</th>
+                    <th class="py-3 px-3 font-bold text-slate-700 whitespace-nowrap">نوع مرکبات</th>
+                    <th class="py-3 px-3 font-bold text-slate-700 whitespace-nowrap">ناخالص (kg)</th>
+                    <th class="py-3 px-3 font-bold text-slate-700 whitespace-nowrap">تعداد سبد</th>
+                    <th class="py-3 px-3 font-bold text-emerald-700 whitespace-nowrap">خالص زنده (kg)</th>
+                    <th class="py-3 px-3 font-bold text-slate-700 whitespace-nowrap">توضیحات / راننده / پلاک</th>
+                `;
+            } else {
+                headHtml += `
+                    <th class="py-3 px-3 font-bold text-slate-700 whitespace-nowrap">شماره فاکتور</th>
+                    <th class="py-3 px-3 font-bold text-slate-700 whitespace-nowrap">تاریخ</th>
+                    <th class="py-3 px-3 font-bold text-slate-700 whitespace-nowrap">نوع سند</th>
+                    <th class="py-3 px-3 font-bold text-slate-700 whitespace-nowrap">طرف حساب</th>
+                    <th class="py-3 px-3 font-bold text-slate-700 whitespace-nowrap">محصول</th>
+                    <th class="py-3 px-3 font-bold text-slate-700 whitespace-nowrap">وزن خالص (kg)</th>
+                    <th class="py-3 px-3 font-bold text-slate-700 whitespace-nowrap">فی (ریال)</th>
+                    <th class="py-3 px-3 font-bold text-emerald-800 whitespace-nowrap">مبلغ کل (ریال)</th>
+                    <th class="py-3 px-3 font-bold text-slate-700 whitespace-nowrap">توضیحات</th>
+                `;
+            }
+
+            headHtml += `
+                <th class="py-3 px-3 w-16 text-center font-bold text-slate-500">وضعیت</th>
+                <th class="py-3 px-3 w-10 text-center font-bold text-slate-500">حذف</th>
+            </tr>`;
+            thead.innerHTML = headHtml;
+
+            // Render Rows
+            mappedResult.mapped_rows.forEach((row, idx) => {
+                const tr = document.createElement('tr');
+                tr.id = `mapped-row-${row._id}`;
+                tr.className = 'hover:bg-slate-50 transition ' + (row._warnings.length ? 'bg-amber-50/20' : '');
+
+                let rowHtml = `
+                    <td class="py-2 px-3 text-center">
+                        <input type="checkbox" ${row._selected ? 'checked' : ''} onchange="toggleRowSelection(${row._id}, this.checked)" class="rounded text-emerald-600 focus:ring-emerald-500">
+                    </td>
+                    <td class="py-2 px-3 text-center text-slate-400 font-mono">${idx + 1}</td>
+                `;
+
+                if (selectedFileType === 'transactions') {
+                    const bankCode = row._bank_code || 'BANK01';
+                    const bankObj = banksList.find(b => b.code === bankCode);
+                    const bankTitle = bankObj ? bankObj.title : bankCode;
+
+                    rowHtml += `
+                        <td class="locked-cell py-2 px-3 whitespace-nowrap font-mono text-center">${row.col3 || '-'}</td>
+                        <td class="locked-cell py-2 px-3 whitespace-nowrap font-mono text-center">${row.col4 || '-'}</td>
+                        <td class="py-2 px-3 whitespace-nowrap font-bold text-xs text-indigo-950">
+                            <span class="font-mono bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded text-[11px]">${bankCode}</span>
+                            <span class="text-slate-700 mr-1">${bankTitle}</span>
+                        </td>
+                        <td contenteditable="true" onblur="updateRowField(${row._id}, 'col12', this.innerText)" class="editable-cell py-2 px-3 whitespace-nowrap font-mono">${row.col12 || ''}</td>
+                        <td class="locked-cell py-2 px-3 whitespace-nowrap font-mono text-left font-bold text-emerald-800 bg-emerald-50/30">${formatNumber(row.col13)}</td>
+                        <td class="locked-cell py-2 px-3 whitespace-nowrap font-mono text-left font-bold text-rose-800 bg-rose-50/30">${formatNumber(row.col14)}</td>
+                    `;
+
+                    // Operation Dropdown
+                    let opSelectHtml = `<select onchange="onRowOperationChanged(${row._id}, this.value)" class="w-full bg-indigo-50/90 border border-indigo-200 text-indigo-950 font-bold rounded-lg text-xs py-1 px-2 outline-none">`;
+                    bankOperations.forEach(op => {
+                        const sel = (row.col10 && row.col10.includes(op.title.split(' ')[0])) || row.col10 === op.title ? 'selected' : '';
+                        opSelectHtml += `<option value="${op.title}" ${sel}>${op.title}</option>`;
+                    });
+                    opSelectHtml += `</select>`;
+                    rowHtml += `<td class="py-1.5 px-2">${opSelectHtml}</td>`;
+
+                    // Party Search / Select Dropdown
+                    let partySelectHtml = `<select onchange="updateRowField(${row._id}, 'col7', this.value)" class="w-full bg-white border border-slate-300 rounded-lg text-xs py-1 px-2 outline-none font-bold">`;
+                    accountsList.forEach(a => {
+                        const sel = row.col7 === a.code ? 'selected' : '';
+                        partySelectHtml += `<option value="${a.code}" ${sel}>${a.code} – ${a.name}</option>`;
+                    });
+                    partySelectHtml += `</select>`;
+                    rowHtml += `<td class="py-1.5 px-2">${partySelectHtml}</td>`;
+
+                    rowHtml += `
+                        <td contenteditable="true" onblur="updateRowField(${row._id}, 'col11', this.innerText)" class="editable-cell py-2 px-3 whitespace-nowrap">${row.col11 || ''}</td>
+                        <td contenteditable="true" onblur="updateRowField(${row._id}, 'col18', this.innerText)" class="editable-cell py-2 px-3 text-slate-700 min-w-[280px]">${row.col18 || ''}</td>
+                    `;
+
+                } else if (selectedFileType === 'baskol') {
+                    rowHtml += `
+                        <td contenteditable="true" onblur="updateRowField(${row._id}, 'col4', this.innerText)" class="editable-cell py-2 px-3 font-mono font-bold">${row.col4 || ''}</td>
+                        <td contenteditable="true" onblur="updateRowField(${row._id}, 'col2', this.innerText)" class="editable-cell py-2 px-3 font-mono">${row.col2 || ''}</td>
+                        <td class="py-1.5 px-2">
+                            <select onchange="updateRowField(${row._id}, 'col5', this.value)" class="w-full bg-white border border-slate-300 rounded-lg text-xs py-1 px-2 outline-none font-bold">
+                                <option value="خرید مرکبات" ${row.col5 === 'خرید مرکبات' ? 'selected' : ''}>خرید مرکبات</option>
+                                <option value="فروش" ${row.col5 === 'فروش' ? 'selected' : ''}>فروش</option>
+                                <option value="مرجوعی خرید" ${row.col5 === 'مرجوعی خرید' ? 'selected' : ''}>مرجوعی خرید</option>
+                            </select>
+                        </td>
+                        <td class="py-1.5 px-2">
+                            <select onchange="updateRowField(${row._id}, 'col7', this.value)" class="w-full bg-white border border-slate-300 rounded-lg text-xs py-1 px-2 outline-none font-bold">
+                                ${accountsList.map(a => `<option value="${a.code}" ${row.col7 === a.code ? 'selected' : ''}>${a.code} – ${a.name}</option>`).join('')}
+                            </select>
+                        </td>
+                        <td contenteditable="true" onblur="updateRowField(${row._id}, 'col10', this.innerText)" class="editable-cell py-2 px-3">${row.col10 || ''}</td>
+                        <td contenteditable="true" onblur="updateBaskolWeight(${row._id}, 'col11', this.innerText)" class="editable-cell py-2 px-3 font-mono font-bold">${formatNumber(row.col11)}</td>
+                        <td contenteditable="true" onblur="updateBaskolWeight(${row._id}, 'col12', this.innerText)" class="editable-cell py-2 px-3 font-mono">${formatNumber(row.col12)}</td>
+                        <td class="locked-cell py-2 px-3 font-mono font-black text-emerald-800 bg-emerald-50/50">${formatNumber(row._net_calculated || 0)}</td>
+                        <td contenteditable="true" onblur="updateRowField(${row._id}, 'col15', this.innerText)" class="editable-cell py-2 px-3">${row.col15 || ''}</td>
+                    `;
+                } else {
+                    rowHtml += `
+                        <td contenteditable="true" onblur="updateRowField(${row._id}, 'col4', this.innerText)" class="editable-cell py-2 px-3 font-mono font-bold">${row.col4 || ''}</td>
+                        <td contenteditable="true" onblur="updateRowField(${row._id}, 'col1', this.innerText)" class="editable-cell py-2 px-3 font-mono">${row.col1 || ''}</td>
+                        <td class="py-1.5 px-2">
+                            <select onchange="updateRowField(${row._id}, 'col5', this.value)" class="w-full bg-white border border-slate-300 rounded-lg text-xs py-1 px-2 outline-none font-bold">
+                                <option value="فروش مرکبات" ${row.col5 === 'فروش مرکبات' ? 'selected' : ''}>فروش مرکبات</option>
+                                <option value="خرید مرکبات" ${row.col5 === 'خرید مرکبات' ? 'selected' : ''}>خرید مرکبات</option>
+                            </select>
+                        </td>
+                        <td class="py-1.5 px-2">
+                            <select onchange="updateRowField(${row._id}, 'col7', this.value)" class="w-full bg-white border border-slate-300 rounded-lg text-xs py-1 px-2 outline-none font-bold">
+                                ${accountsList.map(a => `<option value="${a.code}" ${row.col7 === a.code ? 'selected' : ''}>${a.code} – ${a.name}</option>`).join('')}
+                            </select>
+                        </td>
+                        <td contenteditable="true" onblur="updateRowField(${row._id}, 'col11', this.innerText)" class="editable-cell py-2 px-3">${row.col11 || ''}</td>
+                        <td contenteditable="true" onblur="updateTradeCalc(${row._id}, 'col14', this.innerText)" class="editable-cell py-2 px-3 font-mono">${formatNumber(row.col14)}</td>
+                        <td contenteditable="true" onblur="updateTradeCalc(${row._id}, 'col15', this.innerText)" class="editable-cell py-2 px-3 font-mono">${formatNumber(row.col15)}</td>
+                        <td contenteditable="true" onblur="updateRowField(${row._id}, 'col16', this.innerText)" class="editable-cell py-2 px-3 font-mono font-bold text-emerald-800">${formatNumber(row.col16)}</td>
+                        <td contenteditable="true" onblur="updateRowField(${row._id}, 'col18', this.innerText)" class="editable-cell py-2 px-3">${row.col18 || ''}</td>
+                    `;
+                }
+
+                const statusBadge = row._warnings.length
+                    ? `<span title="${row._warnings.join('\n')}" class="bg-amber-100 text-amber-800 text-[10px] font-bold px-1.5 py-0.5 rounded cursor-help">⚠️ ${row._warnings.length}</span>`
+                    : '<span class="text-emerald-600 font-extrabold text-xs">✓ تأیید</span>';
+
+                rowHtml += `
+                    <td class="py-2 px-3 text-center">${statusBadge}</td>
+                    <td class="py-2 px-3 text-center">
+                        <button onclick="deleteMappedRow(${row._id})" class="text-slate-400 hover:text-rose-600 transition">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </td>
+                `;
+
+                tr.innerHTML = rowHtml;
+                tbody.appendChild(tr);
+            });
+
+            updateKpis();
+            safeCreateIcons();
+        }
+
+        // Handle Bank Operation Dropdown Change (Smart defaulting of accounts)
+        function onRowOperationChanged(rowId, newOpTitle) {
+            const row = mappedResult.mapped_rows.find(r => r._id === rowId);
+            if (!row) return;
+
+            row.col10 = newOpTitle;
+
+            // Auto-assign specialized party codes
+            if (newOpTitle.includes('اموال مدیر') || newOpTitle.includes('قاسم زاهدی') && newOpTitle.includes('فروش')) {
+                row.col7 = 'CAP003';
+            } else if (newOpTitle.includes('شخصی مدیر') || newOpTitle.includes('قاسم زاهدی') && newOpTitle.includes('هزینه')) {
+                row.col7 = 'CAP002';
+            } else if (newOpTitle.includes('کارمزد')) {
+                row.col7 = 'X001';
+            } else if (newOpTitle.includes('پوز')) {
+                row.col7 = 'X004';
+            } else if (newOpTitle.includes('خرید مرکبات') || newOpTitle.includes('باغدار')) {
+                if (!row.col7 || row.col7.startsWith('C') || row.col7.startsWith('CAP')) row.col7 = 'S001';
+            } else if (newOpTitle.includes('بارفروش') || newOpTitle.includes('فروش')) {
+                if (!row.col7 || row.col7.startsWith('S') || row.col7.startsWith('CAP')) row.col7 = 'C001';
+            }
+
+            renderSpecializedPreviewTable();
+        }
+
+        // PAGE 4: RENDER PRINTABLE REPORT (Hides Bank Code on Print, Shows Full Bank Name)
+        function renderPrintableReport() {
+            if (!mappedResult) return;
+            const selectedBank = document.getElementById('bank-select-top') ? document.getElementById('bank-select-top').value : 'BANK01';
+            const bankObj = banksList.find(b => b.code === selectedBank);
+            const fullBankTitle = bankObj ? `${bankObj.title} (شماره حساب: ${bankObj.account_no || '—'})` : selectedBank;
+
+            document.getElementById('print-bank-name').innerText = fullBankTitle;
+            document.getElementById('print-report-date').innerText = new Date().toLocaleDateString('fa-IR');
+            
+            const selectedRows = mappedResult.mapped_rows.filter(r => r._selected);
+            document.getElementById('print-row-count').innerText = `${selectedRows.length} ردیف`;
+
+            const tbody = document.getElementById('print-table-body');
+            tbody.innerHTML = '';
+
+            selectedRows.forEach((r, idx) => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-slate-200';
+
+                // Notice: In the print layout, BANK CODE IS OMITTED! ONLY FULL BANK NAME IS WRITTEN!
+                const bankNameOnly = bankObj ? bankObj.title : fullBankTitle;
+
+                // Find party name from code
+                const partyObj = accountsList.find(a => a.code === r.col7);
+                const partyName = partyObj ? partyObj.name : (r.col7 || '—');
+
+                tr.innerHTML = `
+                    <td class="py-2 px-2 border border-slate-300 text-center font-mono font-bold">${idx + 1}</td>
+                    <td class="py-2 px-2 border border-slate-300 whitespace-nowrap font-mono text-center">${r.col3 || r.col2 || '—'}</td>
+                    <td class="py-2 px-2 border border-slate-300 whitespace-nowrap font-mono text-center">${r.col4 || r.col3 || '—'}</td>
+                    <td class="py-2 px-2 border border-slate-300 whitespace-nowrap font-bold text-slate-900">${bankNameOnly}</td>
+                    <td class="py-2 px-2 border border-slate-300 whitespace-nowrap font-mono">${r.col12 || r.col4 || '—'}</td>
+                    <td class="py-2 px-2 border border-slate-300 whitespace-nowrap font-mono text-left font-bold text-emerald-900">${formatNumber(r.col13)}</td>
+                    <td class="py-2 px-2 border border-slate-300 whitespace-nowrap font-mono text-left font-bold text-rose-900">${formatNumber(r.col14)}</td>
+                    <td class="py-2 px-2 border border-slate-300 whitespace-nowrap font-bold text-slate-800">${r.col10 || r.col5 || '—'}</td>
+                    <td class="py-2 px-2 border border-slate-300 whitespace-nowrap">${partyName}</td>
+                    <td class="py-2 px-2 border border-slate-300 text-[11px] leading-relaxed text-slate-700">${r.col18 || r.col15 || '—'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Live calculation updates
+        function updateBaskolWeight(rowId, field, value) {
+            const row = mappedResult.mapped_rows.find(r => r._id === rowId);
+            if (!row) return;
+            const num = parseFloat(value.replace(/,/g, '')) || 0;
+            row[field] = num;
+            const gross = parseFloat(row.col11) || 0;
+            const baskets = parseFloat(row.col12) || 0;
+            const net = Math.max(0, gross - (baskets * 1.5)) * 0.99;
+            row._net_calculated = Math.round(net * 10) / 10;
+            renderSpecializedPreviewTable();
+        }
+
+        function updateTradeCalc(rowId, field, value) {
+            const row = mappedResult.mapped_rows.find(r => r._id === rowId);
+            if (!row) return;
+            const num = parseFloat(value.replace(/,/g, '')) || 0;
+            row[field] = num;
+            const w = parseFloat(row.col14) || 0;
+            const p = parseFloat(row.col15) || 0;
+            if (w > 0 && p > 0) row.col16 = Math.round(w * p);
+            renderSpecializedPreviewTable();
+        }
+
+        function updateRowField(rowId, field, value) {
+            const row = mappedResult.mapped_rows.find(r => r._id === rowId);
+            if (row) {
+                row[field] = value.trim();
+                updateKpis();
+            }
+        }
+
+        function toggleRowSelection(rowId, isSelected) {
+            const row = mappedResult.mapped_rows.find(r => r._id === rowId);
+            if (row) {
+                row._selected = isSelected;
+                updateKpis();
+            }
+        }
+
+        function toggleAllRows(selectAll) {
+            mappedResult.mapped_rows.forEach(r => r._selected = selectAll);
+            renderSpecializedPreviewTable();
+        }
+
+        function deleteMappedRow(rowId) {
+            mappedResult.mapped_rows = mappedResult.mapped_rows.filter(r => r._id !== rowId);
+            renderSpecializedPreviewTable();
+            showToast('سطر حذف شد.');
+        }
+
+        function addNewManualRow() {
+            if (!mappedResult) return;
+            const newId = Date.now();
+            const newRow = { _id: newId, _selected: true, _warnings: [] };
+            mappedResult.schema_columns.forEach(col => {
+                newRow[col.key] = col.default || '';
+            });
+            mappedResult.mapped_rows.unshift(newRow);
+            renderSpecializedPreviewTable();
+            showToast('سطر جدید ایجاد شد.');
+        }
+
+        // Live KPI updates
+        function updateKpis() {
+            if (!mappedResult) return;
+            const selectedRows = mappedResult.mapped_rows.filter(r => r._selected);
+            document.getElementById('kpi-selected-rows').innerText = selectedRows.length;
+            document.getElementById('kpi-total-rows').innerText = mappedResult.mapped_rows.length;
+
+            let totalDeposit = 0;
+            let totalWithdrawal = 0;
+            let totalWeight = 0;
+            let warnings = 0;
+
+            selectedRows.forEach(r => {
+                warnings += (r._warnings ? r._warnings.length : 0);
+                totalDeposit += parseFloat(r.col13) || 0;
+                totalWithdrawal += parseFloat(r.col14) || 0;
+                totalWeight += parseFloat(r.col11) || 0;
+            });
+
+            document.getElementById('kpi-total-deposit').innerText = formatNumber(totalDeposit);
+            document.getElementById('kpi-total-withdrawal').innerText = formatNumber(totalWithdrawal);
+            document.getElementById('kpi-total-weight').innerText = formatNumber(totalWeight);
+            document.getElementById('kpi-warning-count').innerText = warnings;
+        }
+
+        function formatNumber(num) {
+            if (num === null || num === undefined || num === '') return '-';
+            const n = parseFloat(num);
+            if (isNaN(n)) return num;
+            return n.toLocaleString('fa-IR');
+        }
+
+        // 1-Click Safe Merge Engine
+        async function executeSafeMerge() {
+            if (!mappedResult || !mappedResult.mapped_rows) {
+                showToast('داده‌ای برای ادغام وجود ندارد.', true);
+                return;
+            }
+            const selectedRows = mappedResult.mapped_rows.filter(r => r._selected);
+            if (selectedRows.length === 0) {
+                showToast('لطفاً حداقل یک سطر را برای ادغام تیک بزنید.', true);
+                return;
+            }
+
+            const btn = document.getElementById('btn-merge-action');
+            btn.disabled = true;
+            btn.innerHTML = '<i data-lucide="loader" class="w-5 h-5 animate-spin"></i> در حال تهیه پشتیبان و ادغام در فایل اکسل...';
+            safeCreateIcons();
+
+            try {
+                const res = await fetch('/api/merge', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        target_module: selectedFileType,
+                        rows: selectedRows
+                    })
+                });
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.detail || 'خطا در ثبت و ادغام فایل');
+                }
+
+                const result = await res.json();
+
+                // Show Success Modal
+                document.getElementById('modal-target-file').innerText = result.target_file;
+                document.getElementById('modal-target-sheet').innerText = result.target_sheet;
+                document.getElementById('modal-merged-count').innerText = `${result.merged_count} سطر جدید`;
+                document.getElementById('modal-row-range').innerText = `سطر ${result.start_row} تا ${result.end_row}`;
+                document.getElementById('modal-backup-name').innerText = result.backup_name;
+                document.getElementById('modal-download-btn').href = `/api/download/${result.target_file}`;
+
+                document.getElementById('merge-modal').classList.remove('hidden');
+
+                await loadSystemStatus();
+                await loadBackups();
+            } catch (err) {
+                showToast(err.message, true);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i data-lucide="database" class="w-5 h-5 text-emerald-600"></i> ادغام نهایی با یک کلید';
+                safeCreateIcons();
+            }
+        }
+
+        function closeModalAndRefresh() {
+            document.getElementById('merge-modal').classList.add('hidden');
+            switchMainTab('files');
+        }
+
+        // System Workbooks Status
+        async function loadSystemStatus() {
+            try {
+                const res = await fetch('/api/system-status');
+                const data = await res.json();
+                document.getElementById('badge-backup-count').innerText = data.backup_count;
+
+                const grid = document.getElementById('system-files-grid');
+                grid.innerHTML = '';
+
+                data.files.forEach(f => {
+                    const card = document.createElement('div');
+                    card.className = 'bg-slate-50 border border-slate-200/90 rounded-2xl p-4 hover:border-emerald-400 hover:shadow-md transition space-y-2.5';
+                    card.innerHTML = `
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="font-extrabold text-slate-900 text-sm block">${f.label}</span>
+                                <span class="font-mono text-xs text-emerald-700 font-bold">${f.file}</span>
+                            </div>
+                            <span class="text-[11px] bg-slate-200 text-slate-700 font-mono px-2 py-0.5 rounded-md font-bold">${f.size_kb} KB</span>
+                        </div>
+                        <div class="text-xs text-slate-500 flex justify-between items-center pt-2 border-t border-slate-200">
+                            <span>برگه اصلی: <b class="text-slate-800 font-bold">${f.main_sheet}</b></span>
+                            <span>به‌روزرسانی: ${f.modified}</span>
+                        </div>
+                        <div class="flex gap-2 pt-2">
+                            <button onclick="viewSystemSheet('${f.file}', '${f.main_sheet}')" class="flex-1 bg-white hover:bg-emerald-50 text-emerald-800 border border-slate-200 text-xs font-bold py-1.5 rounded-xl transition">
+                                پیش‌نمایش برگه
+                            </button>
+                            <a href="/api/download/${f.file}" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center justify-center transition">
+                                <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                            </a>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+                safeCreateIcons();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function viewSystemSheet(filename, sheetName) {
+            try {
+                const res = await fetch(`/api/preview-system/${filename}/${sheetName}`);
+                if (!res.ok) throw new Error('خطا در خواندن فایل سیستم');
+                const data = await res.json();
+
+                document.getElementById('view-file-title').innerText = filename;
+                document.getElementById('view-sheet-title').innerText = sheetName;
+
+                const tbody = document.getElementById('system-view-body');
+                tbody.innerHTML = '';
+
+                data.rows.forEach(r => {
+                    let trHtml = `<tr class="hover:bg-slate-50 transition"><td class="py-2 px-3 text-slate-400 font-mono text-center w-12 bg-slate-100 font-bold">${r.row_num}</td>`;
+                    r.values.forEach(v => {
+                        trHtml += `<td class="py-2 px-3 whitespace-nowrap text-slate-700 font-medium">${v}</td>`;
+                    });
+                    trHtml += '</tr>';
+                    tbody.innerHTML += trHtml;
+                });
+
+                document.getElementById('system-viewer-box').classList.remove('hidden');
+                document.getElementById('system-viewer-box').scrollIntoView({ behavior: 'smooth' });
+            } catch (err) {
+                showToast(err.message, true);
+            }
+        }
+
+        function closeSystemViewer() {
+            document.getElementById('system-viewer-box').classList.add('hidden');
+        }
+
+        // Backups List
+        async function loadBackups() {
+            try {
+                const res = await fetch('/api/backups');
+                const data = await res.json();
+                const tbody = document.getElementById('backups-table-body');
+                tbody.innerHTML = '';
+
+                if (data.backups.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="py-6 text-center text-slate-400">تاکنون نسخه پشتیبانی ذخیره نشده است. با اولین ادغام، پشتیبان‌ها اینجا ثبت می‌شوند.</td></tr>';
+                    return;
+                }
+
+                data.backups.forEach(b => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-slate-50 transition';
+                    tr.innerHTML = `
+                        <td class="py-3 px-4 font-mono font-bold text-slate-800">${b.filename}</td>
+                        <td class="py-3 px-4 text-slate-500 font-mono">${b.created}</td>
+                        <td class="py-3 px-4 font-mono text-slate-600 font-bold">${b.size_kb} KB</td>
+                        <td class="py-3 px-4 text-center">
+                            <a href="/api/download/${b.filename}?is_backup=true" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold px-3 py-1.5 rounded-xl inline-flex items-center gap-1 transition">
+                                <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                                دانلود
+                            </a>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+                safeCreateIcons();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // Toast Helper
+        function showToast(msg, isError = false) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').innerText = msg;
+            if (isError) {
+                toast.classList.remove('border-slate-800');
+                toast.classList.add('border-rose-500', 'bg-rose-950');
+            } else {
+                toast.classList.remove('border-rose-500', 'bg-rose-950');
+                toast.classList.add('border-slate-800', 'bg-slate-900');
+            }
+            toast.classList.remove('hidden');
+            setTimeout(() => { toast.classList.add('hidden'); }, 4000);
+            safeCreateIcons();
+        }
+    </script>
+</body>
+</html>
