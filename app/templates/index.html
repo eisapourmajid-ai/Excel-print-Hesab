@@ -90,7 +90,7 @@
 
     <!-- Top Navigation Header -->
     <header class="bg-white/95 backdrop-blur-md border-b border-slate-200/90 sticky top-0 z-40 shadow-sm no-print">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-[1780px] w-full mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <!-- Brand & Logo -->
                 <div class="flex items-center gap-3">
@@ -139,7 +139,7 @@
     </header>
 
     <!-- Main Content Container -->
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <main class="flex-1 max-w-[1780px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
         <!-- TAB 1: فرایند صفحه به صفحه (Page-by-Page Wizard) -->
         <div id="main-tab-wizard" class="space-y-6">
@@ -864,41 +864,137 @@
                 <div class="flex flex-wrap justify-between items-center gap-4 pb-4 border-b border-slate-200">
                     <div>
                         <div class="flex items-center gap-2">
-                            <div class="w-9 h-9 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center font-bold">
+                            <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white flex items-center justify-center font-bold shadow-md shadow-purple-500/20">
                                 <i data-lucide="users" class="w-5 h-5"></i>
                             </div>
-                            <h2 class="text-base font-black text-slate-900">دفتر اشخاص، نوع مشتری، گروه‌ها و ریزگروه‌ها (ذخیره مستقیم در INFO.xlsx)</h2>
+                            <div>
+                                <h2 class="text-base font-black text-slate-900">دفتر اشخاص، نوع مشتری، گروه‌ها و ریزگروه‌ها (ذخیره مستقیم در INFO.xlsx)</h2>
+                                <p class="text-xs text-slate-500 mt-0.5">
+                                    تعریف کلیه صاحبان حساب (فروشندگان/باغداران، خریداران/حجره‌داران، پرسنل، رانندگان و...) با عرض متناسب و نمایش کامل تمام جزئیات فیلدها.
+                                </p>
+                            </div>
                         </div>
-                        <p class="text-xs text-slate-500 mt-1">
-                            تعریف کلیه صاحبان حساب (فروشندگان/باغداران، خریداران/حجره‌داران، پرسنل، رانندگان و...) به همراه گروه‌ها و ریزگروه‌های پویا جهت ارتباط یکپارچه با کاردکس، ترازنامه و گزارش‌گیری‌های مالی آینده.
-                        </p>
                     </div>
 
                     <div class="flex items-center gap-2">
-                        <button onclick="addNewAccountRow()" class="bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 font-bold text-xs px-4 py-2.5 rounded-2xl transition flex items-center gap-1.5 shadow-sm">
+                        <button onclick="toggleQuickAccountForm()" id="btn-toggle-acc-form" class="bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 font-bold text-xs px-4 py-2.5 rounded-2xl transition flex items-center gap-1.5 shadow-sm">
                             <i data-lucide="user-plus" class="w-4 h-4"></i>
-                            + افزودن حساب شخص جدید
+                            <span>فرم تعریف حساب جدید</span>
                         </button>
-                        <button onclick="saveAccountsToMasterInfo()" id="btn-save-accounts" class="bg-purple-600 hover:bg-purple-700 text-white font-black text-xs px-6 py-2.5 rounded-2xl shadow-md transition flex items-center gap-2">
+                        <button onclick="addNewAccountRow()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3.5 py-2.5 rounded-2xl transition flex items-center gap-1.5 shadow-sm" title="افزودن مستقیم یک سطر سریع در جدول">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            + سطر سریع
+                        </button>
+                        <button onclick="saveAccountsToMasterInfo()" id="btn-save-accounts" class="bg-gradient-to-r from-purple-700 to-indigo-700 hover:from-purple-800 hover:to-indigo-800 text-white font-black text-xs px-6 py-2.5 rounded-2xl shadow-md transition flex items-center gap-2">
                             <i data-lucide="save" class="w-4 h-4"></i>
                             ذخیره قطعی حساب‌ها در INFO.xlsx
                         </button>
                     </div>
                 </div>
 
+                <!-- Full-Width Person Account Definition Studio (فرم اختصاصی، عریض و متناسب با صفحه جهت تعریف حساب شخص با تمام جزئیات) -->
+                <div id="section-quick-acc-form" class="bg-gradient-to-br from-purple-50/80 via-indigo-50/30 to-slate-50 border-2 border-purple-200/90 rounded-2xl p-5 space-y-4 shadow-sm">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-purple-200/60 pb-3">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-xl bg-purple-700 text-white flex items-center justify-center font-bold shadow-sm">
+                                <i data-lucide="user-plus" class="w-4 h-4"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-black text-purple-950">فرم تعریف حساب شخص جدید با جزئیات کامل و عرض متناسب صفحه</h3>
+                                <p class="text-[11px] text-slate-600">اطلاعات شخص یا شرکت را وارد کنید تا به صورت زنده در جدول و سپس فایل مادر INFO.xlsx ثبت گردد.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[11px] font-bold bg-purple-100 text-purple-800 px-3 py-1 rounded-xl border border-purple-200">
+                                ثبت دقیق فیلد نام، شبا، ریزگروه و نشانی
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Proportional Responsive Form Grid (12 Columns) -->
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-3.5 items-end">
+                        <!-- Nature / Main Group (نوع حساب) -->
+                        <div class="md:col-span-3">
+                            <label class="block text-xs font-bold text-slate-700 mb-1">گروه اصلی (ماهیت حساب):</label>
+                            <select id="form-acc-nature" onchange="onFormNatureChange(this.value)" class="w-full bg-white border border-purple-200 focus:border-purple-600 text-slate-800 text-xs font-bold rounded-xl px-3 py-2.5 outline-none transition shadow-2xs">
+                                <option value="مشتری">مشتری (خریدار / حجره‌دار)</option>
+                                <option value="تأمین‌کننده">تأمین‌کننده (باغدار / جعبه / سورتینگ)</option>
+                                <option value="فروشنده">فروشنده</option>
+                                <option value="کارمند">کارمند / پرسنل و کارگران</option>
+                                <option value="سایر حساب">سایر حساب‌ها و متفرقه</option>
+                                <option value="دارایی ثابت">دارایی ثابت</option>
+                                <option value="وام و تسهیلات">وام و تسهیلات</option>
+                                <option value="سرمایه و آورده صاحبان">سرمایه و جاری شرکا (قاسم زاهدی)</option>
+                            </select>
+                        </div>
+
+                        <!-- Subgroup (ریزگروه تخصصی) -->
+                        <div class="md:col-span-3">
+                            <label class="block text-xs font-bold text-slate-700 mb-1">ریزگروه (دسته‌بندی تخصصی):</label>
+                            <select id="form-acc-subgroup" class="w-full bg-white border border-purple-200 focus:border-purple-600 text-purple-950 text-xs font-bold rounded-xl px-3 py-2.5 outline-none transition shadow-2xs">
+                                <!-- Populated dynamically via JS -->
+                            </select>
+                        </div>
+
+                        <!-- Code (کد حساب) -->
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-bold text-slate-700 mb-1">کد حساب (سیستمی):</label>
+                            <input type="text" id="form-acc-code" placeholder="C001" class="w-full bg-slate-50 border border-purple-200 focus:border-purple-600 text-purple-950 font-mono font-black text-xs rounded-xl px-3 py-2.5 outline-none transition text-center shadow-2xs">
+                        </div>
+
+                        <!-- Account Name (فیلد نام شخص / شرکت - پهن و برجسته) -->
+                        <div class="md:col-span-4">
+                            <label class="block text-xs font-black text-purple-950 mb-1">نام کامل شخص / صاحب حساب / شرکت (فیلد نام):</label>
+                            <input type="text" id="form-acc-name" placeholder="مثلاً: حاج سید قاسم زاهدی دارابکلایی / شرکت بازرگانی..." class="w-full bg-white border-2 border-purple-300 focus:border-purple-600 text-slate-900 font-black text-sm rounded-xl px-3.5 py-2 outline-none transition placeholder:text-slate-400 placeholder:font-normal shadow-xs">
+                        </div>
+
+                        <!-- Card / IBAN (شماره کارت / شبا) -->
+                        <div class="md:col-span-4">
+                            <label class="block text-xs font-bold text-slate-700 mb-1">شماره کارت بانکی یا شماره شبا (تسویه):</label>
+                            <input type="text" id="form-acc-notes" placeholder="IR... یا شماره کارت ۱۶ رقمی" class="w-full bg-white border border-purple-200 focus:border-purple-600 text-slate-800 font-mono text-xs rounded-xl px-3 py-2.5 outline-none transition dir-ltr text-left shadow-2xs">
+                        </div>
+
+                        <!-- Mobile (همراه / تماس) -->
+                        <div class="md:col-span-3">
+                            <label class="block text-xs font-bold text-slate-700 mb-1">شماره همراه / تماس:</label>
+                            <input type="text" id="form-acc-mobile" placeholder="۰۹..." class="w-full bg-white border border-purple-200 focus:border-purple-600 text-slate-800 font-mono text-xs rounded-xl px-3 py-2.5 outline-none transition dir-ltr text-left shadow-2xs">
+                        </div>
+
+                        <!-- Address (نشانی کامل و محل باغ) -->
+                        <div class="md:col-span-5">
+                            <label class="block text-xs font-bold text-slate-700 mb-1">نشانی کامل، شهر، موقعیت باغ یا میدان بار:</label>
+                            <input type="text" id="form-acc-address" placeholder="مثلاً: مازندران، میاندورود، دارابکلا، روبروی باغات مرکبات..." class="w-full bg-white border border-purple-200 focus:border-purple-600 text-slate-800 text-xs rounded-xl px-3 py-2.5 outline-none transition shadow-2xs">
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="md:col-span-12 flex justify-between items-center pt-2 border-t border-purple-200/50">
+                            <span class="text-[11px] text-slate-500">پس از ثبت، حساب در ابتدای جدول قرار می‌گیرد و با زدن «ذخیره قطعی»، در شیت Accounts ذخیره خواهد شد.</span>
+                            <div class="flex items-center gap-2">
+                                <button type="button" onclick="resetAccountForm()" class="bg-white hover:bg-slate-100 text-slate-600 text-xs font-bold px-4 py-2 rounded-xl border border-slate-200 transition">
+                                    پاک کردن فرم
+                                </button>
+                                <button type="button" onclick="submitNewAccountFromForm()" class="bg-gradient-to-r from-purple-700 via-indigo-700 to-purple-800 hover:from-purple-800 hover:to-indigo-800 text-white font-black text-xs px-6 py-2.5 rounded-xl transition flex items-center gap-2 shadow-md">
+                                    <i data-lucide="user-check" class="w-4 h-4"></i>
+                                    + ثبت حساب شخص در دفتر اشخاص
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Dynamic Subgroup Addition Studio (تعریف و افزودن ریزگروه جدید به دلخواه کاربر) -->
-                <div class="bg-gradient-to-r from-purple-50 via-indigo-50/40 to-slate-50 border border-purple-200/80 rounded-2xl p-4.5 space-y-3 shadow-inner">
+                <div class="bg-gradient-to-r from-purple-50/60 via-indigo-50/30 to-slate-50 border border-purple-200/80 rounded-2xl p-4.5 space-y-3 shadow-inner">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2 text-xs font-black text-purple-950">
                             <i data-lucide="folder-plus" class="w-4 h-4 text-purple-600"></i>
-                            <span>تعریف و افزودن ریزگروه جدید به گروه انتخابی (اتصال زنده به فایل مادر)</span>
+                            <span>تعریف و افزودن ریزگروه جدید به گروه انتخابی (اتصال زنده به شیت Groups در INFO.xlsx)</span>
                         </div>
                         <span class="text-[11px] text-purple-700 font-bold bg-purple-100 px-2 py-0.5 rounded-md">
                             توسعه دسته‌بندی‌ها به دلخواه
                         </span>
                     </div>
                     <p class="text-[11px] text-slate-600">
-                        ریزگروه‌های جدید به شیت <strong>Groups</strong> در فایل مادر <strong>INFO.xlsx</strong> اضافه می‌شوند و فوراً در منوی کشویی تمام حساب‌ها و دفاتر سیستم قابل انتخاب خواهند بود (مانند: باغدار تامسون، حجره‌دار میدان مرکزی تهران و...).
+                        ریزگروه‌های جدید به شیت <strong>Groups</strong> در فایل مادر <strong>INFO.xlsx</strong> اضافه می‌شوند و فوراً در منوی کشویی تمام حساب‌ها و دفاتر سیستم قابل انتخاب خواهند بود (مانند: باغدار تامسون، حجره‌دار میدان مرکزی تهران، راننده نیسان و...).
                     </p>
                     <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
                         <div class="md:col-span-4">
@@ -929,7 +1025,7 @@
 
                 <!-- Filters & Search Toolbar -->
                 <div class="flex flex-wrap justify-between items-center gap-3 pt-1">
-                    <div class="flex flex-wrap items-center gap-1.5 bg-slate-100 p-1 rounded-xl text-xs">
+                    <div class="flex flex-wrap items-center gap-1.5 bg-slate-100 p-1.5 rounded-xl text-xs">
                         <button onclick="filterAccountsByNature('all')" id="filter-btn-nature-all" class="px-3 py-1 font-bold rounded-lg bg-white text-purple-700 shadow-xs">
                             همه حساب‌ها (<span id="count-acc-all">0</span>)
                         </button>
@@ -947,26 +1043,26 @@
                         </button>
                     </div>
 
-                    <div class="relative w-72">
-                        <i data-lucide="search" class="w-3.5 h-3.5 absolute right-3 top-3 text-slate-400"></i>
-                        <input type="text" id="search-accounts-input" oninput="renderAccountsTable()" placeholder="جستجو در نام، کد، شماره شبا یا ریزگروه..." class="w-full bg-slate-50 border border-slate-200 text-xs rounded-xl pr-8 pl-3 py-2 outline-none focus:bg-white focus:border-purple-400 transition">
+                    <div class="relative w-80">
+                        <i data-lucide="search" class="w-4 h-4 absolute right-3 top-2.5 text-slate-400"></i>
+                        <input type="text" id="search-accounts-input" oninput="renderAccountsTable()" placeholder="جستجو در نام، کد، شماره شبا یا ریزگروه..." class="w-full bg-slate-50 border border-slate-200 text-xs rounded-xl pr-9 pl-3 py-2 outline-none focus:bg-white focus:border-purple-500 transition">
                     </div>
                 </div>
 
-                <!-- Accounts Table -->
-                <div class="border border-slate-200 rounded-2xl overflow-hidden shadow-inner max-h-[500px] overflow-y-auto">
-                    <table class="w-full text-right text-xs">
+                <!-- Accounts Table (عریض، متناسب با صفحه و نمایش کامل و دقیق تمام جزئیات) -->
+                <div class="border border-slate-200 rounded-2xl overflow-hidden shadow-inner max-h-[620px] overflow-y-auto overflow-x-auto">
+                    <table class="w-full min-w-[1450px] text-right text-xs">
                         <thead class="bg-slate-100 text-slate-700 border-b border-slate-200 font-black sticky top-0 z-10 shadow-xs">
                             <tr>
-                                <th class="py-3 px-3 w-12 text-center">ردیف</th>
-                                <th class="py-3 px-3 w-24 font-black text-purple-950">کد حساب</th>
-                                <th class="py-3 px-3 w-48 font-black text-slate-900">نام شخص / صاحب حساب</th>
-                                <th class="py-3 px-3 w-36 font-black text-slate-800">گروه اصلی (نوع حساب)</th>
-                                <th class="py-3 px-3 w-44 font-black text-slate-800">ریزگروه (دسته‌بندی)</th>
-                                <th class="py-3 px-3 w-48 font-black text-slate-800">شماره کارت / شبا</th>
-                                <th class="py-3 px-3 w-32 font-black text-slate-800">همراه / تلفن</th>
-                                <th class="py-3 px-3 font-black text-slate-800">نشانی و توضیحات</th>
-                                <th class="py-3 px-3 w-12 text-center font-bold text-slate-400">حذف</th>
+                                <th class="py-3.5 px-3 w-14 min-w-[56px] text-center">ردیف</th>
+                                <th class="py-3.5 px-3 w-28 min-w-[110px] font-black text-purple-950 text-center">کد حساب</th>
+                                <th class="py-3.5 px-3 min-w-[340px] w-[360px] font-black text-slate-900">نام شخص / صاحب حساب (فیلد نام)</th>
+                                <th class="py-3.5 px-3 w-44 min-w-[170px] font-black text-slate-800">گروه اصلی (نوع حساب)</th>
+                                <th class="py-3.5 px-3 w-56 min-w-[210px] font-black text-slate-800">ریزگروه (دسته‌بندی تخصصی)</th>
+                                <th class="py-3.5 px-3 w-64 min-w-[260px] font-black text-slate-800">شماره کارت / شبا</th>
+                                <th class="py-3.5 px-3 w-40 min-w-[160px] font-black text-slate-800">همراه / تلفن</th>
+                                <th class="py-3.5 px-3 min-w-[340px] font-black text-slate-800">نشانی کامل و توضیحات</th>
+                                <th class="py-3.5 px-3 w-28 min-w-[110px] text-center font-bold text-slate-600">عملیات</th>
                             </tr>
                         </thead>
                         <tbody id="accounts-table-tbody" class="divide-y divide-slate-100">
@@ -1108,6 +1204,104 @@
                 <button onclick="closeModalAndRefresh()" class="px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-2xl transition">
                     بستن
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: کارت کامل مشخصات صاحب حساب -->
+    <div id="modal-account-detail" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 no-print">
+        <div class="bg-white rounded-3xl max-w-3xl w-full p-6 space-y-5 shadow-2xl border border-slate-100 animate-in fade-in zoom-in duration-200">
+            <!-- Header -->
+            <div class="flex justify-between items-start border-b border-slate-100 pb-4">
+                <div class="flex items-center gap-3">
+                    <div id="modal-acc-avatar" class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white font-black text-xl flex items-center justify-center shadow-md shadow-purple-500/20">
+                        <i data-lucide="user" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h3 id="modal-acc-title-name" class="font-black text-lg text-slate-900">مشخصات حساب</h3>
+                            <span id="modal-acc-badge-code" class="font-mono text-xs font-black bg-purple-100 text-purple-800 px-2.5 py-0.5 rounded-lg border border-purple-200"></span>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-0.5">مشاهده و ویرایش کلیه جزئیات و مشخصات صاحب حساب (ثبت در برگه Accounts فایل INFO.xlsx)</p>
+                    </div>
+                </div>
+                <button onclick="closeAccountDetailModal()" class="text-slate-400 hover:text-slate-700 p-1.5 rounded-xl hover:bg-slate-100 transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Full Details Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-3.5 text-xs">
+                <!-- Account Code -->
+                <div class="md:col-span-3">
+                    <label class="block font-bold text-slate-700 mb-1">کد حساب:</label>
+                    <input type="text" id="modal-acc-input-code" readonly class="w-full bg-slate-100 border border-slate-200 rounded-xl px-3 py-2 font-mono font-black text-slate-800 text-center outline-none">
+                </div>
+
+                <!-- Account Full Name -->
+                <div class="md:col-span-9">
+                    <label class="block font-black text-purple-950 mb-1">نام کامل شخص / صاحب حساب / شرکت (فیلد نام):</label>
+                    <input type="text" id="modal-acc-input-name" class="w-full bg-white border-2 border-purple-300 focus:border-purple-600 rounded-xl px-3.5 py-2 font-black text-sm text-slate-900 outline-none shadow-xs transition">
+                </div>
+
+                <!-- Main Group -->
+                <div class="md:col-span-6">
+                    <label class="block font-bold text-slate-700 mb-1">گروه اصلی (ماهیت):</label>
+                    <select id="modal-acc-select-nature" onchange="onModalNatureChanged(this.value)" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold text-slate-800 outline-none focus:bg-white focus:border-purple-500 transition">
+                        <!-- Options -->
+                    </select>
+                </div>
+
+                <!-- Subgroup -->
+                <div class="md:col-span-6">
+                    <label class="block font-bold text-slate-700 mb-1">ریزگروه (دسته‌بندی):</label>
+                    <select id="modal-acc-select-subgroup" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold text-slate-800 outline-none focus:bg-white focus:border-purple-500 transition">
+                        <!-- Options -->
+                    </select>
+                </div>
+
+                <!-- Card / IBAN -->
+                <div class="md:col-span-6">
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="font-bold text-slate-700">شماره کارت یا شبا بانکی:</label>
+                        <button type="button" onclick="copyModalNotes()" class="text-purple-600 hover:text-purple-800 font-bold text-[11px] flex items-center gap-1">
+                            <i data-lucide="copy" class="w-3 h-3"></i>
+                            <span>کپی</span>
+                        </button>
+                    </div>
+                    <input type="text" id="modal-acc-input-notes" placeholder="IR... یا شماره ۱۶ رقمی کارت" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-mono tracking-wider dir-ltr text-left outline-none focus:bg-white focus:border-purple-500 transition">
+                </div>
+
+                <!-- Mobile / Phone -->
+                <div class="md:col-span-3">
+                    <label class="block font-bold text-slate-700 mb-1">شماره همراه:</label>
+                    <input type="text" id="modal-acc-input-mobile" placeholder="۰۹..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-mono dir-ltr text-left outline-none focus:bg-white focus:border-purple-500 transition">
+                </div>
+
+                <div class="md:col-span-3">
+                    <label class="block font-bold text-slate-700 mb-1">تلفن ثابت / دفتر:</label>
+                    <input type="text" id="modal-acc-input-phone" placeholder="۰۱۱..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-mono dir-ltr text-left outline-none focus:bg-white focus:border-purple-500 transition">
+                </div>
+
+                <!-- Address -->
+                <div class="md:col-span-12">
+                    <label class="block font-bold text-slate-700 mb-1">نشانی کامل، شهر، موقعیت باغات مرکبات یا میدان بار:</label>
+                    <textarea id="modal-acc-input-address" rows="2" placeholder="آدرس دقیق شخص، محل تحویل بار مرکبات..." class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none focus:bg-white focus:border-purple-500 resize-none transition text-slate-800"></textarea>
+                </div>
+            </div>
+
+            <!-- Footer Buttons -->
+            <div class="flex justify-between items-center pt-3 border-t border-slate-100">
+                <span class="text-[11px] text-slate-400">تغییرات فوراً در حافظه ثبت شده و پس از ذخیره نهایی در فایل اکسل محفوظ می‌ماند.</span>
+                <div class="flex gap-2">
+                    <button onclick="closeAccountDetailModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition">
+                        بستن
+                    </button>
+                    <button onclick="saveModalAccountChanges()" class="px-5 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-1.5">
+                        <i data-lucide="check" class="w-4 h-4"></i>
+                        اعمال تغییرات در لیست
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -1269,6 +1463,8 @@
                     select.appendChild(opt);
                 });
             }
+            populateAccountFormSubgroups('مشتری');
+            suggestAccountCodeForForm('مشتری');
         }
 
         async function fetchAccounts() {
@@ -1277,6 +1473,7 @@
                 const data = await res.json();
                 accountsList = data.accounts || [];
                 updateAccountsCountBadges();
+                suggestAccountCodeForForm(document.getElementById('form-acc-nature') ? document.getElementById('form-acc-nature').value : 'مشتری');
             } catch (err) {
                 console.error(err);
             }
@@ -1315,6 +1512,156 @@
             renderAccountsTable();
         }
 
+        // Helper: Escape HTML to prevent injection and attribute corruption
+        function escapeHtml(str) {
+            if (!str && str !== 0) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        }
+
+        // Helper: Copy text to clipboard
+        function copyToClipboard(text) {
+            if (!text) return;
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast('کپی در کلیپ‌بورد انجام شد: ' + text);
+                }).catch(() => fallbackCopy(text));
+            } else {
+                fallbackCopy(text);
+            }
+        }
+
+        function fallbackCopy(text) {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.left = '-9999px';
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            try {
+                document.execCommand('copy');
+                showToast('کپی در کلیپ‌بورد انجام شد: ' + text);
+            } catch (err) {
+                showToast('خطا در کپی متن', true);
+            }
+            document.body.removeChild(ta);
+        }
+
+        // Quick Account Definition Form Logic
+        function toggleQuickAccountForm() {
+            const el = document.getElementById('section-quick-acc-form');
+            if (!el) return;
+            el.classList.toggle('hidden');
+        }
+
+        function onFormNatureChange(nature) {
+            populateAccountFormSubgroups(nature);
+            suggestAccountCodeForForm(nature);
+        }
+
+        function suggestAccountCodeForForm(nature) {
+            let prefix = 'C';
+            if (nature === 'تأمین‌کننده') prefix = 'S';
+            else if (nature === 'فروشنده') prefix = 'SL';
+            else if (nature === 'کارمند') prefix = 'E';
+            else if (nature === 'دارایی ثابت') prefix = 'F';
+            else if (nature === 'وام و تسهیلات') prefix = 'L';
+            else if (nature === 'سرمایه و آورده صاحبان') prefix = 'CAP';
+            else if (nature === 'سایر حساب') prefix = 'X';
+
+            let maxNum = 0;
+            accountsList.forEach(a => {
+                if (a.code && a.code.startsWith(prefix)) {
+                    const numPart = parseInt(a.code.replace(prefix, '')) || 0;
+                    if (numPart > maxNum) maxNum = numPart;
+                }
+            });
+            const nextCode = `${prefix}${String(maxNum + 1).padStart(3, '0')}`;
+            const codeInput = document.getElementById('form-acc-code');
+            if (codeInput) codeInput.value = nextCode;
+        }
+
+        function populateAccountFormSubgroups(nature) {
+            const subSelect = document.getElementById('form-acc-subgroup');
+            if (!subSelect) return;
+            subSelect.innerHTML = '<option value="">(انتخاب ریزگروه)</option>';
+
+            const grpObj = groupsList.find(g => g.title === nature || nature.includes(g.title));
+            const availableSubs = grpObj ? grpObj.subgroups : [];
+
+            availableSubs.forEach(sub => {
+                const opt = document.createElement('option');
+                opt.value = sub;
+                opt.innerText = sub;
+                subSelect.appendChild(opt);
+            });
+        }
+
+        function resetAccountForm() {
+            const nameEl = document.getElementById('form-acc-name');
+            const notesEl = document.getElementById('form-acc-notes');
+            const mobileEl = document.getElementById('form-acc-mobile');
+            const addrEl = document.getElementById('form-acc-address');
+            if (nameEl) nameEl.value = '';
+            if (notesEl) notesEl.value = '';
+            if (mobileEl) mobileEl.value = '';
+            if (addrEl) addrEl.value = '';
+            const natureEl = document.getElementById('form-acc-nature');
+            if (natureEl) suggestAccountCodeForForm(natureEl.value);
+        }
+
+        function submitNewAccountFromForm() {
+            const nameInput = document.getElementById('form-acc-name');
+            const name = nameInput ? nameInput.value.trim() : '';
+            if (!name) {
+                showToast('لطفاً نام شخص یا صاحب حساب را وارد فرمایید.', true);
+                if (nameInput) nameInput.focus();
+                return;
+            }
+
+            const nature = document.getElementById('form-acc-nature') ? document.getElementById('form-acc-nature').value : 'مشتری';
+            const subgroup = document.getElementById('form-acc-subgroup') ? document.getElementById('form-acc-subgroup').value : '';
+            let code = document.getElementById('form-acc-code') ? document.getElementById('form-acc-code').value.trim() : '';
+            if (!code) {
+                suggestAccountCodeForForm(nature);
+                code = document.getElementById('form-acc-code').value.trim();
+            }
+
+            if (accountsList.some(a => a.code === code)) {
+                if (!confirm(`کد ${code} قبلاً وجود دارد. آیا مایل به ثبت با همین کد هستید؟`)) {
+                    return;
+                }
+            }
+
+            const notes = document.getElementById('form-acc-notes') ? document.getElementById('form-acc-notes').value.trim() : '';
+            const mobile = document.getElementById('form-acc-mobile') ? document.getElementById('form-acc-mobile').value.trim() : '';
+            const address = document.getElementById('form-acc-address') ? document.getElementById('form-acc-address').value.trim() : '';
+
+            const newAcc = {
+                code: code,
+                nature: nature,
+                subgroup: subgroup,
+                name: name,
+                phone: '',
+                mobile: mobile,
+                address: address,
+                notes: notes,
+                accounting_group: 'عادی',
+                audit_group: 'معاف'
+            };
+
+            accountsList.unshift(newAcc);
+            updateAccountsCountBadges();
+            renderAccountsTable();
+            resetAccountForm();
+            showToast(`حساب شخص «${name}» با کد ${code} با موفقیت در لیست اضافه شد. جهت ثبت در INFO.xlsx دکمه ذخیره را بزنید.`);
+        }
+
         function renderAccountsTable() {
             const tbody = document.getElementById('accounts-table-tbody');
             if (!tbody) return;
@@ -1331,7 +1678,7 @@
 
                 let matchQuery = true;
                 if (q) {
-                    const text = `${a.code} ${a.name} ${a.nature} ${a.subgroup || ''} ${a.phone || ''} ${a.mobile || ''} ${a.notes || ''}`.toLowerCase();
+                    const text = `${a.code} ${a.name} ${a.nature} ${a.subgroup || ''} ${a.phone || ''} ${a.mobile || ''} ${a.notes || ''} ${a.address || ''}`.toLowerCase();
                     matchQuery = text.includes(q);
                 }
                 return matchNature && matchQuery;
@@ -1339,7 +1686,7 @@
 
             filtered.forEach((acc, idx) => {
                 const tr = document.createElement('tr');
-                tr.className = 'hover:bg-slate-50 transition';
+                tr.className = 'hover:bg-purple-50/30 transition';
 
                 // Find main group object to get its available subgroups
                 const grpObj = groupsList.find(g => g.title === acc.nature || acc.nature.includes(g.title));
@@ -1354,49 +1701,182 @@
 
                 let subOptionsHtml = `<option value="">(انتخاب ریزگروه)</option>`;
                 if (acc.subgroup && !availableSubs.includes(acc.subgroup)) {
-                    subOptionsHtml += `<option value="${acc.subgroup}" selected>${acc.subgroup}</option>`;
+                    subOptionsHtml += `<option value="${escapeHtml(acc.subgroup)}" selected>${escapeHtml(acc.subgroup)}</option>`;
                 }
                 availableSubs.forEach(sub => {
                     const sel = (acc.subgroup === sub) ? 'selected' : '';
-                    subOptionsHtml += `<option value="${sub}" ${sel}>${sub}</option>`;
+                    subOptionsHtml += `<option value="${escapeHtml(sub)}" ${sel}>${escapeHtml(sub)}</option>`;
                 });
 
                 tr.innerHTML = `
-                    <td class="py-2.5 px-3 text-center text-slate-400 font-mono">${idx + 1}</td>
-                    <td class="py-2.5 px-3 font-mono font-bold text-purple-950">
-                        <input type="text" value="${acc.code}" onchange="updateAccountItem('${acc.code}', 'code', this.value)" class="w-20 bg-white border border-slate-300 rounded-lg px-2 py-1 font-mono font-bold text-xs outline-none">
+                    <td class="py-2.5 px-3 text-center text-slate-400 font-mono w-14 min-w-[56px]">${idx + 1}</td>
+                    <td class="py-2.5 px-3 text-center w-28 min-w-[110px]">
+                        <span class="inline-block font-mono font-black text-xs px-2.5 py-1 rounded-xl bg-purple-100 text-purple-950 border border-purple-200 shadow-2xs">${escapeHtml(acc.code)}</span>
                     </td>
-                    <td class="py-2.5 px-3">
-                        <input type="text" value="${acc.name}" onchange="updateAccountItem('${acc.code}', 'name', this.value)" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1 font-bold text-xs outline-none">
+                    <td class="py-2.5 px-3 min-w-[340px] w-[360px]">
+                        <div class="relative">
+                            <input type="text" value="${escapeHtml(acc.name)}" title="${escapeHtml(acc.name)}" onchange="updateAccountItem('${acc.code}', 'name', this.value)" class="w-full bg-white border border-slate-300 focus:border-purple-600 focus:ring-2 focus:ring-purple-100 rounded-xl px-3 py-1.5 font-black text-sm text-slate-900 outline-none transition shadow-2xs" placeholder="نام صاحب حساب...">
+                        </div>
                     </td>
-                    <td class="py-2.5 px-3">
-                        <select onchange="onAccountNatureChanged('${acc.code}', this.value)" class="w-full bg-white border border-slate-300 rounded-lg px-2 py-1 text-xs font-bold text-slate-800 outline-none">
+                    <td class="py-2.5 px-3 w-44 min-w-[170px]">
+                        <select onchange="onAccountNatureChanged('${acc.code}', this.value)" class="w-full bg-white border border-slate-300 focus:border-purple-600 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-800 outline-none shadow-2xs">
                             ${natureOptionsHtml}
                         </select>
                     </td>
-                    <td class="py-2.5 px-3">
-                        <select onchange="updateAccountItem('${acc.code}', 'subgroup', this.value)" class="w-full bg-white border border-slate-300 rounded-lg px-2 py-1 text-xs text-purple-900 font-bold outline-none">
+                    <td class="py-2.5 px-3 w-56 min-w-[210px]">
+                        <select onchange="updateAccountItem('${acc.code}', 'subgroup', this.value)" class="w-full bg-white border border-slate-300 focus:border-purple-600 rounded-xl px-2.5 py-1.5 text-xs text-purple-950 font-bold outline-none shadow-2xs">
                             ${subOptionsHtml}
                         </select>
                     </td>
-                    <td class="py-2.5 px-3 font-mono">
-                        <input type="text" value="${acc.notes || ''}" onchange="updateAccountItem('${acc.code}', 'notes', this.value)" placeholder="شماره کارت، شبا، توضیحات..." class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-xs outline-none">
+                    <td class="py-2.5 px-3 w-64 min-w-[260px]">
+                        <div class="flex items-center gap-1.5">
+                            <input type="text" value="${escapeHtml(acc.notes || '')}" title="${escapeHtml(acc.notes || '')}" onchange="updateAccountItem('${acc.code}', 'notes', this.value)" placeholder="شماره کارت یا شبا..." class="w-full bg-white border border-slate-300 focus:border-purple-600 rounded-xl px-2.5 py-1.5 text-xs font-mono tracking-wider dir-ltr text-left outline-none shadow-2xs">
+                            ${acc.notes ? `<button type="button" onclick="copyToClipboard('${escapeHtml(acc.notes)}')" class="shrink-0 p-1.5 text-slate-400 hover:text-purple-700 bg-slate-50 hover:bg-purple-50 border border-slate-200 rounded-lg transition" title="کپی شماره کارت/شبا"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button>` : ''}
+                        </div>
                     </td>
-                    <td class="py-2.5 px-3 font-mono">
-                        <input type="text" value="${acc.mobile || acc.phone || ''}" onchange="updateAccountItem('${acc.code}', 'mobile', this.value)" placeholder="۰۹..." class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-xs outline-none">
+                    <td class="py-2.5 px-3 w-40 min-w-[160px]">
+                        <input type="text" value="${escapeHtml(acc.mobile || acc.phone || '')}" onchange="updateAccountItem('${acc.code}', 'mobile', this.value)" placeholder="۰۹..." class="w-full bg-white border border-slate-300 focus:border-purple-600 rounded-xl px-2.5 py-1.5 text-xs font-mono dir-ltr text-left outline-none shadow-2xs">
                     </td>
-                    <td class="py-2.5 px-3">
-                        <input type="text" value="${acc.address || ''}" onchange="updateAccountItem('${acc.code}', 'address', this.value)" placeholder="نشانی / شهر..." class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-xs outline-none">
+                    <td class="py-2.5 px-3 min-w-[340px]">
+                        <input type="text" value="${escapeHtml(acc.address || '')}" title="${escapeHtml(acc.address || '')}" onchange="updateAccountItem('${acc.code}', 'address', this.value)" placeholder="نشانی، شهر، مشخصات باغ یا انبار..." class="w-full bg-white border border-slate-300 focus:border-purple-600 rounded-xl px-3 py-1.5 text-xs outline-none shadow-2xs text-slate-800">
                     </td>
-                    <td class="py-2.5 px-3 text-center">
-                        <button onclick="deleteAccountRow('${acc.code}')" class="text-rose-500 hover:text-rose-700 hover:bg-rose-50 p-1.5 rounded-lg transition" title="حذف حساب">
-                            <i data-lucide="trash-2" class="w-4 h-4"></i>
-                        </button>
+                    <td class="py-2.5 px-3 text-center w-28 min-w-[110px]">
+                        <div class="flex items-center justify-center gap-1.5">
+                            <button onclick="openAccountDetailModal('${acc.code}')" class="text-purple-700 hover:text-white hover:bg-purple-600 bg-purple-50 border border-purple-200 px-2.5 py-1 rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-2xs" title="مشاهده و ویرایش مشخصات کامل">
+                                <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                                <span>کارت</span>
+                            </button>
+                            <button onclick="deleteAccountRow('${acc.code}')" class="text-rose-500 hover:text-rose-700 hover:bg-rose-50 p-1.5 rounded-xl transition" title="حذف حساب">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
             safeCreateIcons();
+        }
+
+        // Account Detail Modal Logic
+        let currentModalAccountCode = null;
+
+        function openAccountDetailModal(code) {
+            const acc = accountsList.find(a => a.code === code);
+            if (!acc) return;
+            currentModalAccountCode = code;
+
+            const titleEl = document.getElementById('modal-acc-title-name');
+            const badgeEl = document.getElementById('modal-acc-badge-code');
+            const codeInput = document.getElementById('modal-acc-input-code');
+            const nameInput = document.getElementById('modal-acc-input-name');
+            const notesInput = document.getElementById('modal-acc-input-notes');
+            const mobileInput = document.getElementById('modal-acc-input-mobile');
+            const phoneInput = document.getElementById('modal-acc-input-phone');
+            const addressInput = document.getElementById('modal-acc-input-address');
+
+            if (titleEl) titleEl.innerText = acc.name || 'مشخصات حساب';
+            if (badgeEl) badgeEl.innerText = acc.code;
+            if (codeInput) codeInput.value = acc.code;
+            if (nameInput) nameInput.value = acc.name || '';
+            if (notesInput) notesInput.value = acc.notes || '';
+            if (mobileInput) mobileInput.value = acc.mobile || '';
+            if (phoneInput) phoneInput.value = acc.phone || '';
+            if (addressInput) addressInput.value = acc.address || '';
+
+            // Populate nature select in modal
+            const natureSelect = document.getElementById('modal-acc-select-nature');
+            if (natureSelect) {
+                natureSelect.innerHTML = '';
+                const mainNatures = ['مشتری', 'فروشنده', 'تأمین‌کننده', 'کارمند', 'سایر حساب', 'دارایی ثابت', 'وام و تسهیلات', 'سرمایه و آورده صاحبان'];
+                mainNatures.forEach(nat => {
+                    const opt = document.createElement('option');
+                    opt.value = nat;
+                    opt.innerText = nat;
+                    if (acc.nature === nat) opt.selected = true;
+                    natureSelect.appendChild(opt);
+                });
+            }
+
+            populateModalSubgroups(acc.nature, acc.subgroup);
+
+            const modal = document.getElementById('modal-account-detail');
+            if (modal) modal.classList.remove('hidden');
+            safeCreateIcons();
+        }
+
+        function populateModalSubgroups(nature, currentSub) {
+            const subSelect = document.getElementById('modal-acc-select-subgroup');
+            if (!subSelect) return;
+            subSelect.innerHTML = '<option value="">(انتخاب ریزگروه)</option>';
+
+            const grpObj = groupsList.find(g => g.title === nature || nature.includes(g.title));
+            const availableSubs = grpObj ? grpObj.subgroups : [];
+
+            if (currentSub && !availableSubs.includes(currentSub)) {
+                const opt = document.createElement('option');
+                opt.value = currentSub;
+                opt.innerText = currentSub;
+                opt.selected = true;
+                subSelect.appendChild(opt);
+            }
+
+            availableSubs.forEach(sub => {
+                const opt = document.createElement('option');
+                opt.value = sub;
+                opt.innerText = sub;
+                if (currentSub === sub) opt.selected = true;
+                subSelect.appendChild(opt);
+            });
+        }
+
+        function onModalNatureChanged(newNature) {
+            populateModalSubgroups(newNature, '');
+        }
+
+        function copyModalNotes() {
+            const input = document.getElementById('modal-acc-input-notes');
+            if (input && input.value.trim()) {
+                copyToClipboard(input.value.trim());
+            } else {
+                showToast('شماره کارت یا شبایی درج نشده است.', true);
+            }
+        }
+
+        function closeAccountDetailModal() {
+            const modal = document.getElementById('modal-account-detail');
+            if (modal) modal.classList.add('hidden');
+            currentModalAccountCode = null;
+        }
+
+        function saveModalAccountChanges() {
+            if (!currentModalAccountCode) return;
+            const acc = accountsList.find(a => a.code === currentModalAccountCode);
+            if (!acc) return;
+
+            const nameInput = document.getElementById('modal-acc-input-name');
+            const newName = nameInput ? nameInput.value.trim() : '';
+            if (!newName) {
+                showToast('نام صاحب حساب نمی‌تواند خالی باشد.', true);
+                return;
+            }
+
+            acc.name = newName;
+            const natureEl = document.getElementById('modal-acc-select-nature');
+            if (natureEl) acc.nature = natureEl.value;
+            const subEl = document.getElementById('modal-acc-select-subgroup');
+            if (subEl) acc.subgroup = subEl.value;
+            const notesEl = document.getElementById('modal-acc-input-notes');
+            if (notesEl) acc.notes = notesEl.value.trim();
+            const mobEl = document.getElementById('modal-acc-input-mobile');
+            if (mobEl) acc.mobile = mobEl.value.trim();
+            const phoneEl = document.getElementById('modal-acc-input-phone');
+            if (phoneEl) acc.phone = phoneEl.value.trim();
+            const addrEl = document.getElementById('modal-acc-input-address');
+            if (addrEl) acc.address = addrEl.value.trim();
+
+            renderAccountsTable();
+            closeAccountDetailModal();
+            showToast(`مشخصات حساب «${acc.name}» به‌روز شد. جهت ذخیره در فایل اکسل، دکمه ذخیره را بزنید.`);
         }
 
         function updateAccountItem(code, field, val) {
@@ -1439,7 +1919,7 @@
                 code: nextCode,
                 nature: nature,
                 subgroup: '',
-                name: 'حساب شخص جدید',
+                name: 'صاحب حساب جدید',
                 phone: '',
                 mobile: '',
                 address: '',
@@ -1451,7 +1931,7 @@
             accountsList.unshift(newAcc);
             updateAccountsCountBadges();
             renderAccountsTable();
-            showToast(`حساب جدید با کد ${nextCode} به جدول اضافه شد. پس از تکمیل اطلاعات، دکمه ذخیره را بفشارید.`);
+            showToast(`حساب جدید با کد ${nextCode} به جدول اضافه شد. پس از تکمیل نام و اطلاعات، دکمه ذخیره را بفشارید.`);
         }
 
         function deleteAccountRow(code) {
@@ -2098,13 +2578,13 @@
                     rowHtml += `<td class="py-1.5 px-2">${opSelectHtml}</td>`;
 
                     // Party Search / Select Dropdown
-                    let partySelectHtml = `<select onchange="updateRowField(${row._id}, 'col7', this.value)" class="w-full bg-white border border-slate-300 rounded-lg text-xs py-1 px-2 outline-none font-bold">`;
+                    let partySelectHtml = `<select onchange="updateRowField(${row._id}, 'col7', this.value)" class="w-full bg-white border border-slate-300 focus:border-purple-600 rounded-xl text-xs py-1.5 px-2 outline-none font-bold text-slate-800 shadow-2xs">`;
                     accountsList.forEach(a => {
                         const sel = row.col7 === a.code ? 'selected' : '';
                         partySelectHtml += `<option value="${a.code}" ${sel}>${a.code} – ${a.name}</option>`;
                     });
                     partySelectHtml += `</select>`;
-                    rowHtml += `<td class="py-1.5 px-2">${partySelectHtml}</td>`;
+                    rowHtml += `<td class="py-1.5 px-2 min-w-[270px]">${partySelectHtml}</td>`;
 
                     rowHtml += `
                         <td contenteditable="true" onblur="updateRowField(${row._id}, 'col11', this.innerText)" class="editable-cell py-2 px-3 whitespace-nowrap">${row.col11 || ''}</td>
@@ -2122,8 +2602,8 @@
                                 <option value="مرجوعی خرید" ${row.col5 === 'مرجوعی خرید' ? 'selected' : ''}>مرجوعی خرید</option>
                             </select>
                         </td>
-                        <td class="py-1.5 px-2">
-                            <select onchange="updateRowField(${row._id}, 'col7', this.value)" class="w-full bg-white border border-slate-300 rounded-lg text-xs py-1 px-2 outline-none font-bold">
+                        <td class="py-1.5 px-2 min-w-[270px]">
+                            <select onchange="updateRowField(${row._id}, 'col7', this.value)" class="w-full bg-white border border-slate-300 focus:border-purple-600 rounded-xl text-xs py-1.5 px-2 outline-none font-bold text-slate-800 shadow-2xs">
                                 ${accountsList.map(a => `<option value="${a.code}" ${row.col7 === a.code ? 'selected' : ''}>${a.code} – ${a.name}</option>`).join('')}
                             </select>
                         </td>
@@ -2143,8 +2623,8 @@
                                 <option value="خرید مرکبات" ${row.col5 === 'خرید مرکبات' ? 'selected' : ''}>خرید مرکبات</option>
                             </select>
                         </td>
-                        <td class="py-1.5 px-2">
-                            <select onchange="updateRowField(${row._id}, 'col7', this.value)" class="w-full bg-white border border-slate-300 rounded-lg text-xs py-1 px-2 outline-none font-bold">
+                        <td class="py-1.5 px-2 min-w-[270px]">
+                            <select onchange="updateRowField(${row._id}, 'col7', this.value)" class="w-full bg-white border border-slate-300 focus:border-purple-600 rounded-xl text-xs py-1.5 px-2 outline-none font-bold text-slate-800 shadow-2xs">
                                 ${accountsList.map(a => `<option value="${a.code}" ${row.col7 === a.code ? 'selected' : ''}>${a.code} – ${a.name}</option>`).join('')}
                             </select>
                         </td>
