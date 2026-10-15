@@ -576,7 +576,7 @@ async def preview_system_sheet(filename: str, sheet_name: str, limit: int = 50):
     }
 
 
-@app.get("/api/download-suite")
+@app.api_route("/api/download-suite", methods=["GET", "HEAD"])
 async def download_complete_suite():
     """Returns complete offline standalone Mazandasht package for Windows 7 & offline systems."""
     zip_path = "Mazandasht_Accounting_Suite.zip"

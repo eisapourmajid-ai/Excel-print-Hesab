@@ -25,6 +25,19 @@ def to_english_digits(text: Any) -> str:
     return s.strip()
 
 
+def safe_to_float(val: Any, default: float = 0.0) -> float:
+    """Safely parses any Persian/English number, string with commas or currency into float."""
+    if val is None:
+        return default
+    s = to_english_digits(str(val)).replace(",", "").replace("ریال", "").replace("تومان", "").strip()
+    if not s or s.lower() in ["none", "nan", "null", "-", "—"]:
+        return default
+    try:
+        return float(s)
+    except Exception:
+        return default
+
+
 def split_persian_datetime(val: Any) -> Tuple[str, str]:
     """
     Splits composite datetime into (date_str, time_str).
@@ -347,8 +360,7 @@ def generate_mapped_preview(
             elif col_type == "number":
                 if final_val is not None and str(final_val).strip() != "":
                     try:
-                        num_str = to_english_digits(str(final_val)).replace(",", "").replace("ریال", "").replace("تومان", "").strip()
-                        num_val = float(num_str)
+                        num_val = safe_to_float(final_val)
                         if toman_to_rial and ("مبلغ" in t_col["title"] or "ریال" in t_col["title"]):
                             num_val = num_val * 10
                         final_val = int(num_val) if num_val.is_integer() else round(num_val, 2)
@@ -373,14 +385,9 @@ def generate_mapped_preview(
             raw_amt_val = src_row.get(single_amount_col, 0)
             raw_dir_val = str(src_row.get(direction_col, "")).lower() if direction_col else ""
             
-            try:
-                amt_str = to_english_digits(str(raw_amt_val)).replace(",", "").replace("ریال", "").replace("تومان", "").strip()
-                amt_num = float(amt_str) if amt_str else 0.0
-                if toman_to_rial:
-                    amt_num *= 10
-            except Exception:
-                amt_num = 0.0
-                mapped_item["_warnings"].append("مبلغ تراکنش تک‌ستونی قابل خواندن نبود")
+            amt_num = safe_to_float(raw_amt_val)
+            if toman_to_rial:
+                amt_num *= 10
             
             # Check direction / sign
             is_deposit = False
@@ -427,8 +434,8 @@ def generate_mapped_preview(
 
         # 4. Smart Operation and Account Defaulting for Transactions
         if target_module_id == "transactions":
-            dep_val = float(mapped_item.get("col13") or 0)
-            wit_val = float(mapped_item.get("col14") or 0)
+            dep_val = safe_to_float(mapped_item.get("col13"))
+            wit_val = safe_to_float(mapped_item.get("col14"))
             total_deposit += dep_val
             total_withdrawal += wit_val
             
@@ -462,8 +469,8 @@ def generate_mapped_preview(
 
         # 5. Live Net Weight Calculation for Baskol
         if target_module_id == "baskol":
-            gross = float(mapped_item.get("col11") or 0)
-            baskets = float(mapped_item.get("col12") or 0)
+            gross = safe_to_float(mapped_item.get("col11"))
+            baskets = safe_to_float(mapped_item.get("col12"))
             tare_weight = baskets * 1.5
             net_before_drop = max(0, gross - tare_weight)
             net_final = round(net_before_drop * 0.99, 1)  # 1% drop deduction
